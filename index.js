@@ -399,7 +399,6 @@ module.exports = {
   // filter,
   sample,
   // arrange, - reorder indexes
-  map,
   // reduce, - example: combining m d y min sec to datetime
   // aggregate,
   // summarize, - supply summary function for each key
