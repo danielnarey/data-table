@@ -277,6 +277,24 @@ const head = async (promise, n = 5) => {
 };
 
 
+const variables = async (promise) => {
+  let table;
+
+  try {
+    table = await promise;
+    const validated = await isDataTable(table);
+
+    if (!validated) {
+      throw new TypeError('Expected a data table or a promise resolving to a data table.');
+    }
+  } catch (error) {
+    console.log(error);
+  }
+
+  return Object.keys(table);
+};
+
+
 const size = async (promise) => {
   let obj;
 
@@ -354,7 +372,7 @@ const assign = async (promise, obj) => {
 
 const map = async (promise, vars, f) => {
   let table;
-  let newVars;
+  let modified;
 
   try {
     table = await promise;
@@ -365,11 +383,11 @@ const map = async (promise, vars, f) => {
     }
 
     if (whatType(vars) === 'String') {
-      newVars = { [vars]: table[vars].map(f) };
+      modified = { [vars]: table[vars].map(f) };
     } else if (whatType(vars) === 'Array') {
-      newVars = {};
+      modified = {};
       vars.forEach((v) => {
-        newVars[v] = table[v].map(f);
+        modified[v] = table[v].map(f);
       });
     } else {
       throw new TypeError('Expected a variable name (string) or array of variable names as the second argument.');
@@ -382,7 +400,7 @@ const map = async (promise, vars, f) => {
     console.log(error);
   }
 
-  return Object.assign({}, table, newVars);
+  return Object.assign({}, table, modified);
 };
 
 
@@ -398,6 +416,7 @@ module.exports = {
   previewDataFile,
   previewRemoteData,
   head,
+  variables,
   size,
   sample,
   assign,
