@@ -352,7 +352,7 @@ const assign = async (promise, obj) => {
 };
 
 
-const apply = async (promise, varName, f) => {
+const map = async (promise, varName, f) => {
   let table;
 
   try {
@@ -374,7 +374,7 @@ const apply = async (promise, varName, f) => {
     console.log(error);
   }
 
-  return Object.assign({}, table, { [varName]: f(table[varName]) });
+  return Object.assign({}, table, { [varName]: table[varName].map(f) });
 };
 
 
@@ -393,5 +393,5 @@ module.exports = {
   size,
   sample,
   assign,
-  apply,
+  map,
 };
