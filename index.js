@@ -348,61 +348,55 @@ const sample = async (promise, n) => {
 
 // Working with promises
 
-const assign = async (promise, update) => {
-  let table;
-  let modified;
+const apply = async (promise, f, ...args) => {
+  const table = await promise;
+  const validated = await isDataTable(table);
 
-  try {
-    table = await promise;
-    modified = await update;
-    const validated = await isDataTable(table);
-
-    if (!validated) {
-      throw new TypeError('Expected a data table or a promise resolving to a data table.');
-    }
-
-    if (whatType(modified) !== 'Object') {
-      throw new TypeError('Expected an object as the second argument.');
-    }
-  } catch (error) {
-    console.log(error);
+  if (!validated) {
+    throw new TypeError('Expected a data table or a promise resolving to a data table.');
   }
 
-  return Object.assign({}, table, modified);
+  return f(...[].concat(table, args));
 };
 
 
-const map = async (promise, vars, f) => {
-  let table;
-  let modified;
+const apply2 = async (promise1, promise2, f, ...args) => {
+  const table1 = await promise1;
+  const table2 = await promise2;
+  const validated1 = await isDataTable(table1);
+  const validated2 = await isDataTable(table2);
 
-  try {
-    table = await promise;
-    const validated = await isDataTable(table);
-
-    if (!validated) {
-      throw new TypeError('Expected a data table or a promise resolving to a data table.');
-    }
-
-    if (whatType(vars) === 'String') {
-      modified = { [vars]: table[vars].map(f) };
-    } else if (whatType(vars) === 'Array') {
-      modified = {};
-      vars.forEach((v) => {
-        modified[v] = table[v].map(f);
-      });
-    } else {
-      throw new TypeError('Expected a variable name (string) or array of variable names as the second argument.');
-    }
-
-    if (whatType(f) !== 'Function') {
-      throw new TypeError('Expected a function as the third argument.');
-    }
-  } catch (error) {
-    console.log(error);
+  if (!validated1) {
+    throw new TypeError('First argument: Expected a data table or a promise resolving to a data table.');
   }
 
-  return Object.assign({}, table, modified);
+  if (!validated2) {
+    throw new TypeError('Second argument: Expected a data table or a promise resolving to a data table.');
+  }
+
+  return f(...[].concat(table1, table2, args));
+};
+
+
+const assign = (table, update) => apply2(
+  table,
+  update,
+  (a, b) => Object.assign({}, a, b),
+);
+
+
+const map = async (table, vars, f) => {
+  if (whatType(vars) !== 'String' && whatType(vars) !== 'Array') {
+    throw new TypeError('Second argument: Expected a variable name (string) or array of variable names.');
+  }
+
+  if (whatType(f) !== 'Function') {
+    throw new TypeError('Third argument: Expected a function.');
+  }
+
+  const mapTable = t => [].concat(vars).map(k => t[k].map(f));
+
+  return assign(table, apply(table, mapTable));
 };
 
 
@@ -418,12 +412,11 @@ module.exports = {
   previewDataFile,
   previewRemoteData,
   head,
-  variables,
   size,
   // describe, - like pandas function
-  // summarize,
-  // values, - returns array value of key
-  // select,
+  variables,
+  // observations, - returns array value of key
+  // select, - drop variables not selected
   assign,
   // filter,
   sample,
@@ -431,6 +424,7 @@ module.exports = {
   map,
   // reduce, - example: combining m d y min sec to datetime
   // aggregate,
+  // summarize, - supply summary function for each key
   // spread,
   // gather,
   // display, - pretty print table
