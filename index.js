@@ -348,27 +348,27 @@ const sample = async (promise, n) => {
 
 // Working with promises
 
-const assign = async (promise, obj) => {
+const assign = async (promise, update) => {
   let table;
-  let update;
+  let modified;
 
   try {
     table = await promise;
-    update = await obj;
+    modified = await update;
     const validated = await isDataTable(table);
 
     if (!validated) {
       throw new TypeError('Expected a data table or a promise resolving to a data table.');
     }
 
-    if (whatType(update) !== 'Object') {
+    if (whatType(modified) !== 'Object') {
       throw new TypeError('Expected an object as the second argument.');
     }
   } catch (error) {
     console.log(error);
   }
 
-  return Object.assign({}, table, update);
+  return Object.assign({}, table, modified);
 };
 
 
