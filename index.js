@@ -128,14 +128,15 @@ const observations = (dt, varName) => {
 };
 
 
-const head = (dt, n = 5) => {
+const head = async (dt, n = 5) => {
   if (whatType(n) !== 'Number') {
     throw typeError2('an integer');
   }
 
+  const varNames = await variables(dt);
   const f = x => x.slice(0, n);
 
-  return map(dt, variables(dt), f);
+  return map(dt, varNames, f);
 };
 
 
@@ -155,11 +156,12 @@ const sample = async (dt, n) => {
     throw typeError2('an integer');
   }
 
+  const varNames = await variables(dt);
   const firstArray = await observations(dt);
   const selected = stats.sample([...firstArray.keys()], n);
   const f = x => x.filter((c, i) => selected.includes(i));
 
-  return map(dt, variables(dt), f);
+  return map(dt, varNames, f);
 };
 
 
