@@ -352,8 +352,9 @@ const assign = async (promise, obj) => {
 };
 
 
-const map = async (promise, varName, f) => {
+const map = async (promise, vars, f) => {
   let table;
+  let newVars;
 
   try {
     table = await promise;
@@ -363,8 +364,15 @@ const map = async (promise, varName, f) => {
       throw new TypeError('Expected a data table or a promise resolving to a data table.');
     }
 
-    if (whatType(varName) !== 'String') {
-      throw new TypeError('Expected a variable name (string) as the second argument.');
+    if (whatType(vars) === 'String') {
+      newVars = { [vars]: table[vars].map(f) };
+    } else if (whatType(vars) === 'Array') {
+      newVars = {};
+      vars.forEach((v) => {
+        newVars[v] = table[v].map(f);
+      });
+    } else {
+      throw new TypeError('Expected a variable name (string) or array of variable names as the second argument.');
     }
 
     if (whatType(f) !== 'Function') {
@@ -374,7 +382,7 @@ const map = async (promise, varName, f) => {
     console.log(error);
   }
 
-  return Object.assign({}, table, { [varName]: table[varName].map(f) });
+  return Object.assign({}, table, newVars);
 };
 
 
