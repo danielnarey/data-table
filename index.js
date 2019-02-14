@@ -352,6 +352,32 @@ const assign = async (promise, obj) => {
 };
 
 
+const apply = async (promise, varName, f) => {
+  let table;
+
+  try {
+    table = await promise;
+    const validated = await isDataTable(table);
+
+    if (!validated) {
+      throw new TypeError('Expected a data table or a promise resolving to a data table.');
+    }
+
+    if (whatType(varName) !== 'String') {
+      throw new TypeError('Expected a variable name (string) as the second argument.');
+    }
+
+    if (whatType(f) !== 'Function') {
+      throw new TypeError('Expected a function as the third argument.');
+    }
+  } catch (error) {
+    console.log(error);
+  }
+
+  return Object.assign({}, table, { [varName]: f(table[varName]) });
+};
+
+
 module.exports = {
   isDataTable,
   fromArray,
@@ -367,4 +393,5 @@ module.exports = {
   size,
   sample,
   assign,
+  apply,
 };
