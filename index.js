@@ -94,7 +94,23 @@ const assign = (dt, update) => {
 };
 
 
-const map = (dt, varNames, f) => {
+const mapVars = (dt, varNames, f) => {
+  if (whatType(varNames) !== 'String' && whatType(varNames) !== 'Array') {
+    throw typeError2('a variable name (string) or array of variable names');
+  }
+
+  if (whatType(f) !== 'Function') {
+    throw typeError3('a function');
+  }
+
+  const r = t => (a, k) => Object.assign({}, a, { [k]: f(t[k]) });
+  const ft = t => [].concat(varNames).reduce(r(t), {});
+
+  return assign(dt, apply(dt, ft));
+};
+
+
+const mapObs = (dt, varNames, f) => {
   if (whatType(varNames) !== 'String' && whatType(varNames) !== 'Array') {
     throw typeError2('a variable name (string) or array of variable names');
   }
@@ -136,7 +152,7 @@ const head = async (dt, n = 5) => {
   const varNames = await variables(dt);
   const f = x => x.slice(0, n);
 
-  return map(dt, varNames, f);
+  return mapVars(dt, varNames, f);
 };
 
 
@@ -161,7 +177,7 @@ const sample = async (dt, n) => {
   const selected = stats.sample([...firstArray.keys()], n);
   const f = x => x.filter((c, i) => selected.includes(i));
 
-  return map(dt, varNames, f);
+  return mapVars(dt, varNames, f);
 };
 
 
