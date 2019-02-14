@@ -19,18 +19,21 @@ const whatType = (value) => {
 };
 
 
+const typeError1 = expected => new TypeError(`First argument: Expected ${expected}.`);
+
+
+const typeError2 = expected => new TypeError(`Second argument: Expected ${expected}.`);
+
+
+const typeError3 = expected => new TypeError(`Third argument: Expected ${expected}.`);
+
+
 // EXPOSED
 
 // Type checking
 
 const isDataTable = async (promise) => {
-  let dt;
-
-  try {
-    dt = await promise;
-  } catch (error) {
-    console.log(error);
-  }
+  const dt = await promise;
 
   if (whatType(dt) !== 'Object') {
     return false;
@@ -55,6 +58,108 @@ const isDataTable = async (promise) => {
   }
 
   return true;
+};
+
+
+// Working with promises
+
+const apply = async (dt, f, ...args) => {
+  if (!(await isDataTable(dt))) {
+    throw typeError1('a data table or a promise resolving to a data table');
+  }
+
+  return f(...[].concat(await dt, args));
+};
+
+
+const apply2 = async (dt1, dt2, f, ...args) => {
+  if (!(await isDataTable(dt1))) {
+    throw typeError1('a data table or a promise resolving to a data table');
+  }
+
+  if (!(await isDataTable(dt2))) {
+    throw typeError2('a data table or a promise resolving to a data table');
+  }
+
+  return f(...[].concat(await dt1, await dt2, args));
+};
+
+
+// Functions on data tables
+
+const assign = (dt, update) => {
+  const f = (a, b) => Object.assign({}, a, b);
+
+  return apply2(dt, update, f);
+};
+
+
+const map = (dt, varNames, f) => {
+  if (whatType(varNames) !== 'String' && whatType(varNames) !== 'Array') {
+    throw typeError2('a variable name (string) or array of variable names');
+  }
+
+  if (whatType(f) !== 'Function') {
+    throw typeError3('a function');
+  }
+
+  const r = t => (a, k) => Object.assign({}, a, { [k]: t[k].map(f) });
+  const ft = t => [].concat(varNames).reduce(r(t), {});
+
+  return assign(dt, apply(dt, ft));
+};
+
+
+const variables = (dt) => {
+  const f = x => Object.keys(x);
+
+  return apply(dt, f);
+};
+
+
+const observations = (dt, varName) => {
+  if (whatType(varName) !== 'String') {
+    throw typeError2('a variable name (string)');
+  }
+
+  const f = x => x[varName];
+
+  return apply(dt, f);
+};
+
+
+const head = (dt, n = 5) => {
+  if (whatType(n) !== 'Number') {
+    throw typeError2('an integer');
+  }
+
+  const f = x => x.slice(0, n);
+
+  return map(dt, variables(dt), f);
+};
+
+
+const size = async (dt) => {
+  const varNames = await variables(dt);
+  const firstArray = await observations(dt, varNames[0]);
+
+  return {
+    variables: varNames.length,
+    observations: firstArray.length,
+  };
+};
+
+
+const sample = async (dt, n) => {
+  if (whatType(n) !== 'Number') {
+    throw typeError2('an integer');
+  }
+
+  const firstArray = await observations(dt);
+  const selected = stats.sample([...firstArray.keys()], n);
+  const f = x => x.filter((c, i) => selected.includes(i));
+
+  return map(dt, variables(dt), f);
 };
 
 
@@ -249,154 +354,6 @@ const previewRemoteData = (url, bytes = 500, encoding = 'utf8') => new Promise((
     reject(error);
   }
 });
-
-
-// Viewing, sampling, and summarizing data
-
-const head = async (promise, n = 5) => {
-  const obj = {};
-
-  try {
-    const dt = await promise;
-    const validated = await isDataTable(dt);
-
-    if (!validated) {
-      throw new TypeError('Expected a data table or a promise resolving to a data table.');
-    }
-
-    const keys = Object.keys(dt);
-
-    keys.forEach((k) => {
-      obj[k] = dt[k].slice(0, n);
-    });
-  } catch (error) {
-    console.log(error);
-  }
-
-  return obj;
-};
-
-
-const variables = async (promise) => {
-  let dt;
-
-  try {
-    dt = await promise;
-    const validated = await isDataTable(dt);
-
-    if (!validated) {
-      throw new TypeError('Expected a data table or a promise resolving to a data table.');
-    }
-  } catch (error) {
-    console.log(error);
-  }
-
-  return Object.keys(dt);
-};
-
-
-const size = async (promise) => {
-  let obj;
-
-  try {
-    const dt = await promise;
-    const validated = await isDataTable(dt);
-
-    if (!validated) {
-      throw new TypeError('Expected a data table or a promise resolving to a data table.');
-    }
-
-    const keys = Object.keys(dt);
-
-    obj = {
-      variables: keys.length,
-      observations: dt[keys[0]].length,
-    };
-  } catch (error) {
-    console.log(error);
-  }
-
-  return obj;
-};
-
-
-const sample = async (promise, n) => {
-  const obj = {};
-
-  try {
-    const dt = await promise;
-    const validated = await isDataTable(dt);
-
-    if (!validated) {
-      throw new TypeError('Expected a data table or a promise resolving to a data table.');
-    }
-
-    const keys = Object.keys(dt);
-    const { observations } = await size(dt);
-    const selected = stats.sample([...Array(observations).keys()], n);
-
-    keys.forEach((k) => {
-      obj[k] = dt[k].filter((c, i) => selected.includes(i));
-    });
-  } catch (error) {
-    console.log(error);
-  }
-
-  return obj;
-};
-
-
-// Working with promises
-
-const apply = async (promise, f, ...args) => {
-  const dt = await promise;
-  const validated = await isDataTable(dt);
-
-  if (!validated) {
-    throw new TypeError('Expected a data table or a promise resolving to a data table.');
-  }
-
-  return f(...[].concat(dt, args));
-};
-
-
-const apply2 = async (p1, p2, f, ...args) => {
-  const dt1 = await p1;
-  const dt2 = await p2;
-  const validated2 = await isDataTable(dt2);
-
-  if (!(await isDataTable(dt1))) {
-    throw new TypeError('First argument: Expected a data table or a promise resolving to a data table.');
-  }
-
-  if (!validated2) {
-    throw new TypeError('Second argument: Expected a data table or a promise resolving to a data table.');
-  }
-
-  return f(...[].concat(dt1, dt2, args));
-};
-
-
-const assign = (dt, update) => apply2(
-  dt,
-  update,
-  (a, b) => Object.assign({}, a, b),
-);
-
-
-const map = async (dt, vars, f) => {
-  if (whatType(vars) !== 'String' && whatType(vars) !== 'Array') {
-    throw new TypeError('Second argument: Expected a variable name (string) or array of variable names.');
-  }
-
-  if (whatType(f) !== 'Function') {
-    throw new TypeError('Third argument: Expected a function.');
-  }
-
-  const mapTable = t => [].concat(vars).map(k => t[k].map(f));
-
-  return assign(dt, apply(dt, mapTable));
-};
 
 
 module.exports = {
