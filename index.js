@@ -350,23 +350,25 @@ const sample = async (promise, n) => {
 
 const assign = async (promise, obj) => {
   let table;
+  let update;
 
   try {
     table = await promise;
+    update = await obj;
     const validated = await isDataTable(table);
 
     if (!validated) {
       throw new TypeError('Expected a data table or a promise resolving to a data table.');
     }
 
-    if (whatType(obj) !== 'Object') {
+    if (whatType(update) !== 'Object') {
       throw new TypeError('Expected an object as the second argument.');
     }
   } catch (error) {
     console.log(error);
   }
 
-  return Object.assign({}, table, obj);
+  return Object.assign({}, table, update);
 };
 
 
@@ -418,7 +420,19 @@ module.exports = {
   head,
   variables,
   size,
-  sample,
+  // describe, - like pandas function
+  // summarize,
+  // values, - returns array value of key
+  // select,
   assign,
+  // filter,
   map,
+  sample,
+  // arrange, - reorder indexes
+  // aggregate,
+  // spread,
+  // gather,
+  // display, - pretty print table
+  // outputJsonArray,
+  // outputJsonTable,
 };
