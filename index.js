@@ -110,7 +110,7 @@ const mapVars = (dt, varNames, f) => {
 };
 
 
-const mapObs = (dt, varNames, f) => {
+const mapValues = (dt, varNames, f) => {
   if (whatType(varNames) !== 'String' && whatType(varNames) !== 'Array') {
     throw typeError2('a variable name (string) or array of variable names');
   }
@@ -173,7 +173,7 @@ const sample = async (dt, n) => {
   }
 
   const varNames = await variables(dt);
-  const firstArray = await observations(dt);
+  const firstArray = await observations(dt, varNames[0]);
   const selected = stats.sample([...firstArray.keys()], n);
   const f = x => x.filter((c, i) => selected.includes(i));
 
@@ -388,7 +388,7 @@ module.exports = {
   apply,
   apply2,
   mapVars,
-  mapObs,
+  mapValues,
   head,
   size,
   // describe, - like pandas function
