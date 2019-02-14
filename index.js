@@ -21,7 +21,7 @@ const whatType = (value) => {
 
 // EXPOSED
 
-//- FORMAT CHECKING
+// Type checking
 
 const isDataTable = async (promise) => {
   let table;
@@ -58,7 +58,7 @@ const isDataTable = async (promise) => {
 };
 
 
-//- LOADING AND REFORMATTING
+// Conversion and loading from data sources
 
 const fromArray = jsArray => new Promise((resolve, reject) => {
   if (whatType(jsArray) !== 'Array') {
@@ -94,6 +94,10 @@ const fromCsv = async (filepath) => {
     const jsArray = await neatCsv(csvString);
 
     table = await fromArray(jsArray);
+
+    if (!isDataTable(table)) {
+      throw new TypeError('File content cannot be converted to a data table.');
+    }
   } catch (error) {
     console.log(error);
   }
@@ -109,6 +113,10 @@ const fromJsonArray = async (filepath) => {
     const jsArray = await fs.readJson(filepath);
 
     table = await fromArray(jsArray);
+
+    if (!isDataTable(table)) {
+      throw new TypeError('File content cannot be converted to a data table.');
+    }
   } catch (error) {
     console.log(error);
   }
@@ -122,6 +130,10 @@ const fromJsonTable = async (filepath) => {
 
   try {
     table = await fs.readJson(filepath);
+
+    if (!isDataTable(table)) {
+      throw new TypeError('File content is not a valid data table.');
+    }
   } catch (error) {
     console.log(error);
   }
@@ -138,6 +150,10 @@ const fromRemoteCsv = async (url) => {
     const jsArray = await neatCsv(body);
 
     table = await fromArray(jsArray);
+
+    if (!isDataTable(table)) {
+      throw new TypeError('Response body cannot be converted to a data table.');
+    }
   } catch (error) {
     console.log(error);
   }
@@ -153,6 +169,10 @@ const fromRemoteJsonArray = async (url) => {
     const { body } = await got(url, { json: true });
 
     table = await fromArray(body);
+
+    if (!isDataTable(table)) {
+      throw new TypeError('Response body cannot be converted to a data table.');
+    }
   } catch (error) {
     console.log(error);
   }
@@ -167,6 +187,10 @@ const fromRemoteJsonTable = async (url) => {
   try {
     const { body } = await got(url, { json: true });
 
+    if (!isDataTable(body)) {
+      throw new TypeError('Response body is not a valid data table.');
+    }
+
     table = body;
   } catch (error) {
     console.log(error);
@@ -175,6 +199,8 @@ const fromRemoteJsonTable = async (url) => {
   return table;
 };
 
+
+// Previewing data sources
 
 const previewDataFile = async (filepath, bytes = 500, encoding = 'utf8') => {
   let content;
@@ -218,6 +244,8 @@ const previewRemoteData = (url, bytes = 500, encoding = 'utf8') => new Promise((
   }
 });
 
+
+// Viewing, sampling, and summarizing data
 
 const head = async (promise, n = 5) => {
   const obj = {};
@@ -291,6 +319,29 @@ const sample = async (promise, n) => {
 };
 
 
+// Working with promises
+
+const assign = async (promise, obj) => {
+  let table;
+
+  try {
+    table = await promise;
+
+    if (!isDataTable(table)) {
+      throw new TypeError('Expected a data table or a promise resolving to a data table.');
+    }
+
+    if (whatType(obj) !== 'Object') {
+      throw new TypeError('Expected an object as the second argument.');
+    }
+  } catch (error) {
+    console.log(error);
+  }
+
+  return Object.assign({}, table, obj);
+};
+
+
 module.exports = {
   isDataTable,
   fromArray,
@@ -305,4 +356,5 @@ module.exports = {
   head,
   size,
   sample,
+  assign,
 };
