@@ -426,9 +426,10 @@ module.exports = {
   // select,
   assign,
   // filter,
-  map,
   sample,
   // arrange, - reorder indexes
+  map,
+  // reduce, - example: combining m d y min sec to datetime
   // aggregate,
   // spread,
   // gather,
