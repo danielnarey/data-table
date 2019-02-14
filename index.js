@@ -387,6 +387,8 @@ module.exports = {
   previewRemoteData,
   apply,
   apply2,
+  mapVars,
+  mapObs,
   head,
   size,
   // describe, - like pandas function
