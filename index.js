@@ -4,7 +4,7 @@ const neatCsv = require('neat-csv');
 const stats = require('simple-statistics');
 
 
-// INTERNAL HELPERS
+// INTERNAL
 
 const whatType = (value) => {
   if (value === undefined) {
@@ -18,6 +18,10 @@ const whatType = (value) => {
   return Object.prototype.toString.call(value).slice(8, -1);
 };
 
+
+// EXPOSED
+
+//- FORMAT CHECKING
 
 const isDataTable = async (promise) => {
   let table;
@@ -54,6 +58,8 @@ const isDataTable = async (promise) => {
 };
 
 
+//- LOADING AND REFORMATTING
+
 const fromArray = jsArray => new Promise((resolve, reject) => {
   if (whatType(jsArray) !== 'Array') {
     reject(new TypeError(`Expected an Array but got a ${whatType(jsArray)}`));
@@ -88,6 +94,80 @@ const fromCsv = async (filepath) => {
     const jsArray = await neatCsv(csvString);
 
     table = await fromArray(jsArray);
+  } catch (error) {
+    console.log(error);
+  }
+
+  return table;
+};
+
+
+const fromJsonArray = async (filepath) => {
+  let table;
+
+  try {
+    const jsArray = await fs.readJson(filepath);
+
+    table = await fromArray(jsArray);
+  } catch (error) {
+    console.log(error);
+  }
+
+  return table;
+};
+
+
+const fromJsonTable = async (filepath) => {
+  let table;
+
+  try {
+    table = await fs.readJson(filepath);
+  } catch (error) {
+    console.log(error);
+  }
+
+  return table;
+};
+
+
+const fromRemoteCsv = async (url) => {
+  let table;
+
+  try {
+    const { body } = await got(url);
+    const jsArray = await neatCsv(body);
+
+    table = await fromArray(jsArray);
+  } catch (error) {
+    console.log(error);
+  }
+
+  return table;
+};
+
+
+const fromRemoteJsonArray = async (url) => {
+  let table;
+
+  try {
+    const { body } = await got(url, { json: true });
+
+    table = await fromArray(body);
+  } catch (error) {
+    console.log(error);
+  }
+
+  return table;
+};
+
+
+const fromRemoteJsonTable = async (url) => {
+  let table;
+
+  try {
+    const { body } = await got(url, { json: true });
+
+    table = body;
   } catch (error) {
     console.log(error);
   }
@@ -139,85 +219,16 @@ const previewRemoteData = (url, bytes = 500, encoding = 'utf8') => new Promise((
 });
 
 
-const fromJsonArray = async (filepath) => {
-  let table;
-
-  try {
-    const jsArray = await fs.readJson(filepath);
-
-    table = await fromArray(jsArray);
-  } catch (error) {
-    console.log(error);
-  }
-
-  return table;
-};
-
-
-const fromJsonTable = async (filepath) => {
-  let table;
-
-  try {
-    table = await fs.readJson(filepath);
-  } catch (error) {
-    console.log(error);
-  }
-
-  return table;
-};
-
-
-const fromRemoteCsv = async (url) => {
-  let table;
-
-  try {
-    const { body } = await got(url);
-    const jsonArray = await neatCsv(body);
-
-    table = await asDataTable(jsonArray);
-  } catch (error) {
-    console.log(error);
-  }
-
-  return table;
-};
-
-
-const fromRemoteJsonArray = async (url) => {
-  let table;
-
-  try {
-    const { body } = await got(url, { json: true });
-
-    table = await asDataTable(body);
-  } catch (error) {
-    console.log(error);
-  }
-
-  return table;
-};
-
-
-const fromRemoteJsonTable = async (url) => {
-  let table;
-
-  try {
-    const { body } = await got(url, { json: true });
-
-    table = body;
-  } catch (error) {
-    console.log(error);
-  }
-
-  return table;
-};
-
-
 const head = async (promise, n = 5) => {
   const obj = {};
 
   try {
     const table = await promise;
+
+    if (!isDataTable(table)) {
+      throw new TypeError('Expected a data table or a promise resolving to a data table.');
+    }
+
     const keys = Object.keys(table);
 
     keys.forEach((k) => {
@@ -236,6 +247,11 @@ const size = async (promise) => {
 
   try {
     const table = await promise;
+
+    if (!isDataTable(table)) {
+      throw new TypeError('Expected a data table or a promise resolving to a data table.');
+    }
+
     const keys = Object.keys(table);
 
     obj = {
@@ -255,6 +271,11 @@ const sample = async (promise, n) => {
 
   try {
     const table = await promise;
+
+    if (!isDataTable(table)) {
+      throw new TypeError('Expected a data table or a promise resolving to a data table.');
+    }
+
     const keys = Object.keys(table);
     const { observations } = await size(table);
     const selected = stats.sample([...Array(observations).keys()], n);
@@ -271,6 +292,8 @@ const sample = async (promise, n) => {
 
 
 module.exports = {
+  isDataTable,
+  fromArray,
   fromCsv,
   fromJsonArray,
   fromJsonTable,
