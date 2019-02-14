@@ -256,8 +256,8 @@ const sample = async (promise, n) => {
   try {
     const table = await promise;
     const keys = Object.keys(table);
-    const length = await size(table);
-    const selected = stats.sample([...Array(length).keys()], n);
+    const { observations } = await size(table);
+    const selected = stats.sample([...Array(observations).keys()], n);
 
     keys.forEach((k) => {
       obj[k] = table[k].filter((c, i) => selected.includes(i));
