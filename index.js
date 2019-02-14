@@ -94,8 +94,9 @@ const fromCsv = async (filepath) => {
     const jsArray = await neatCsv(csvString);
 
     table = await fromArray(jsArray);
+    const validated = await isDataTable(table);
 
-    if (!isDataTable(table)) {
+    if (!validated) {
       throw new TypeError('File content cannot be converted to a data table.');
     }
   } catch (error) {
@@ -113,8 +114,9 @@ const fromJsonArray = async (filepath) => {
     const jsArray = await fs.readJson(filepath);
 
     table = await fromArray(jsArray);
+    const validated = await isDataTable(table);
 
-    if (!isDataTable(table)) {
+    if (!validated) {
       throw new TypeError('File content cannot be converted to a data table.');
     }
   } catch (error) {
@@ -130,8 +132,9 @@ const fromJsonTable = async (filepath) => {
 
   try {
     table = await fs.readJson(filepath);
+    const validated = await isDataTable(table);
 
-    if (!isDataTable(table)) {
+    if (!validated) {
       throw new TypeError('File content is not a valid data table.');
     }
   } catch (error) {
@@ -150,8 +153,9 @@ const fromRemoteCsv = async (url) => {
     const jsArray = await neatCsv(body);
 
     table = await fromArray(jsArray);
+    const validated = await isDataTable(table);
 
-    if (!isDataTable(table)) {
+    if (!validated) {
       throw new TypeError('Response body cannot be converted to a data table.');
     }
   } catch (error) {
@@ -169,8 +173,9 @@ const fromRemoteJsonArray = async (url) => {
     const { body } = await got(url, { json: true });
 
     table = await fromArray(body);
+    const validated = await isDataTable(table);
 
-    if (!isDataTable(table)) {
+    if (!validated) {
       throw new TypeError('Response body cannot be converted to a data table.');
     }
   } catch (error) {
@@ -186,8 +191,9 @@ const fromRemoteJsonTable = async (url) => {
 
   try {
     const { body } = await got(url, { json: true });
+    const validated = await isDataTable(body);
 
-    if (!isDataTable(body)) {
+    if (!validated) {
       throw new TypeError('Response body is not a valid data table.');
     }
 
@@ -252,8 +258,9 @@ const head = async (promise, n = 5) => {
 
   try {
     const table = await promise;
+    const validated = await isDataTable(table);
 
-    if (!isDataTable(table)) {
+    if (!validated) {
       throw new TypeError('Expected a data table or a promise resolving to a data table.');
     }
 
@@ -275,8 +282,9 @@ const size = async (promise) => {
 
   try {
     const table = await promise;
+    const validated = await isDataTable(table);
 
-    if (!isDataTable(table)) {
+    if (!validated) {
       throw new TypeError('Expected a data table or a promise resolving to a data table.');
     }
 
@@ -299,8 +307,9 @@ const sample = async (promise, n) => {
 
   try {
     const table = await promise;
+    const validated = await isDataTable(table);
 
-    if (!isDataTable(table)) {
+    if (!validated) {
       throw new TypeError('Expected a data table or a promise resolving to a data table.');
     }
 
@@ -326,8 +335,9 @@ const assign = async (promise, obj) => {
 
   try {
     table = await promise;
+    const validated = await isDataTable(table);
 
-    if (!isDataTable(table)) {
+    if (!validated) {
       throw new TypeError('Expected a data table or a promise resolving to a data table.');
     }
 
