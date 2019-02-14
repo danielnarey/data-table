@@ -24,31 +24,31 @@ const whatType = (value) => {
 // Type checking
 
 const isDataTable = async (promise) => {
-  let table;
+  let dt;
 
   try {
-    table = await promise;
+    dt = await promise;
   } catch (error) {
     console.log(error);
   }
 
-  if (whatType(table) !== 'Object') {
+  if (whatType(dt) !== 'Object') {
     return false;
   }
 
-  const keys = Object.keys(table);
+  const keys = Object.keys(dt);
 
   if (keys.length === 0) {
     return false;
   }
 
-  const valueTypes = keys.map(k => whatType(table[k]));
+  const valueTypes = keys.map(k => whatType(dt[k]));
 
   if (!valueTypes.every(x => (x === 'Array'))) {
     return false;
   }
 
-  const arrayLengths = keys.map(k => table[k].length);
+  const arrayLengths = keys.map(k => dt[k].length);
 
   if (!arrayLengths.every(x => (x === arrayLengths[0]))) {
     return false;
@@ -87,14 +87,14 @@ const fromArray = jsArray => new Promise((resolve, reject) => {
 
 
 const fromCsv = async (filepath) => {
-  let table;
+  let dt;
 
   try {
     const csvString = await fs.readFile(filepath);
     const jsArray = await neatCsv(csvString);
 
-    table = await fromArray(jsArray);
-    const validated = await isDataTable(table);
+    dt = await fromArray(jsArray);
+    const validated = await isDataTable(dt);
 
     if (!validated) {
       throw new TypeError('File content cannot be converted to a data table.');
@@ -103,18 +103,18 @@ const fromCsv = async (filepath) => {
     console.log(error);
   }
 
-  return table;
+  return dt;
 };
 
 
 const fromJsonArray = async (filepath) => {
-  let table;
+  let dt;
 
   try {
     const jsArray = await fs.readJson(filepath);
 
-    table = await fromArray(jsArray);
-    const validated = await isDataTable(table);
+    dt = await fromArray(jsArray);
+    const validated = await isDataTable(dt);
 
     if (!validated) {
       throw new TypeError('File content cannot be converted to a data table.');
@@ -123,16 +123,16 @@ const fromJsonArray = async (filepath) => {
     console.log(error);
   }
 
-  return table;
+  return dt;
 };
 
 
 const fromJsonTable = async (filepath) => {
-  let table;
+  let dt;
 
   try {
-    table = await fs.readJson(filepath);
-    const validated = await isDataTable(table);
+    dt = await fs.readJson(filepath);
+    const validated = await isDataTable(dt);
 
     if (!validated) {
       throw new TypeError('File content is not a valid data table.');
@@ -146,14 +146,14 @@ const fromJsonTable = async (filepath) => {
 
 
 const fromRemoteCsv = async (url) => {
-  let table;
+  let dt;
 
   try {
     const { body } = await got(url);
     const jsArray = await neatCsv(body);
 
-    table = await fromArray(jsArray);
-    const validated = await isDataTable(table);
+    dt = await fromArray(jsArray);
+    const validated = await isDataTable(dt);
 
     if (!validated) {
       throw new TypeError('Response body cannot be converted to a data table.');
@@ -162,18 +162,18 @@ const fromRemoteCsv = async (url) => {
     console.log(error);
   }
 
-  return table;
+  return dt;
 };
 
 
 const fromRemoteJsonArray = async (url) => {
-  let table;
+  let dt;
 
   try {
     const { body } = await got(url, { json: true });
 
-    table = await fromArray(body);
-    const validated = await isDataTable(table);
+    dt = await fromArray(body);
+    const validated = await isDataTable(dt);
 
     if (!validated) {
       throw new TypeError('Response body cannot be converted to a data table.');
@@ -182,12 +182,12 @@ const fromRemoteJsonArray = async (url) => {
     console.log(error);
   }
 
-  return table;
+  return dt;
 };
 
 
 const fromRemoteJsonTable = async (url) => {
-  let table;
+  let dt;
 
   try {
     const { body } = await got(url, { json: true });
@@ -197,12 +197,12 @@ const fromRemoteJsonTable = async (url) => {
       throw new TypeError('Response body is not a valid data table.');
     }
 
-    table = body;
+    dt = body;
   } catch (error) {
     console.log(error);
   }
 
-  return table;
+  return dt;
 };
 
 
@@ -257,17 +257,17 @@ const head = async (promise, n = 5) => {
   const obj = {};
 
   try {
-    const table = await promise;
-    const validated = await isDataTable(table);
+    const dt = await promise;
+    const validated = await isDataTable(dt);
 
     if (!validated) {
       throw new TypeError('Expected a data table or a promise resolving to a data table.');
     }
 
-    const keys = Object.keys(table);
+    const keys = Object.keys(dt);
 
     keys.forEach((k) => {
-      obj[k] = table[k].slice(0, n);
+      obj[k] = dt[k].slice(0, n);
     });
   } catch (error) {
     console.log(error);
@@ -278,11 +278,11 @@ const head = async (promise, n = 5) => {
 
 
 const variables = async (promise) => {
-  let table;
+  let dt;
 
   try {
-    table = await promise;
-    const validated = await isDataTable(table);
+    dt = await promise;
+    const validated = await isDataTable(dt);
 
     if (!validated) {
       throw new TypeError('Expected a data table or a promise resolving to a data table.');
@@ -291,7 +291,7 @@ const variables = async (promise) => {
     console.log(error);
   }
 
-  return Object.keys(table);
+  return Object.keys(dt);
 };
 
 
@@ -299,18 +299,18 @@ const size = async (promise) => {
   let obj;
 
   try {
-    const table = await promise;
-    const validated = await isDataTable(table);
+    const dt = await promise;
+    const validated = await isDataTable(dt);
 
     if (!validated) {
       throw new TypeError('Expected a data table or a promise resolving to a data table.');
     }
 
-    const keys = Object.keys(table);
+    const keys = Object.keys(dt);
 
     obj = {
       variables: keys.length,
-      observations: table[keys[0]].length,
+      observations: dt[keys[0]].length,
     };
   } catch (error) {
     console.log(error);
@@ -324,19 +324,19 @@ const sample = async (promise, n) => {
   const obj = {};
 
   try {
-    const table = await promise;
-    const validated = await isDataTable(table);
+    const dt = await promise;
+    const validated = await isDataTable(dt);
 
     if (!validated) {
       throw new TypeError('Expected a data table or a promise resolving to a data table.');
     }
 
-    const keys = Object.keys(table);
-    const { observations } = await size(table);
+    const keys = Object.keys(dt);
+    const { observations } = await size(dt);
     const selected = stats.sample([...Array(observations).keys()], n);
 
     keys.forEach((k) => {
-      obj[k] = table[k].filter((c, i) => selected.includes(i));
+      obj[k] = dt[k].filter((c, i) => selected.includes(i));
     });
   } catch (error) {
     console.log(error);
@@ -349,24 +349,23 @@ const sample = async (promise, n) => {
 // Working with promises
 
 const apply = async (promise, f, ...args) => {
-  const table = await promise;
-  const validated = await isDataTable(table);
+  const dt = await promise;
+  const validated = await isDataTable(dt);
 
   if (!validated) {
     throw new TypeError('Expected a data table or a promise resolving to a data table.');
   }
 
-  return f(...[].concat(table, args));
+  return f(...[].concat(dt, args));
 };
 
 
-const apply2 = async (promise1, promise2, f, ...args) => {
-  const table1 = await promise1;
-  const table2 = await promise2;
-  const validated1 = await isDataTable(table1);
-  const validated2 = await isDataTable(table2);
+const apply2 = async (p1, p2, f, ...args) => {
+  const dt1 = await p1;
+  const dt2 = await p2;
+  const validated2 = await isDataTable(dt2);
 
-  if (!validated1) {
+  if (!(await isDataTable(dt1))) {
     throw new TypeError('First argument: Expected a data table or a promise resolving to a data table.');
   }
 
@@ -374,18 +373,18 @@ const apply2 = async (promise1, promise2, f, ...args) => {
     throw new TypeError('Second argument: Expected a data table or a promise resolving to a data table.');
   }
 
-  return f(...[].concat(table1, table2, args));
+  return f(...[].concat(dt1, dt2, args));
 };
 
 
-const assign = (table, update) => apply2(
-  table,
+const assign = (dt, update) => apply2(
+  dt,
   update,
   (a, b) => Object.assign({}, a, b),
 );
 
 
-const map = async (table, vars, f) => {
+const map = async (dt, vars, f) => {
   if (whatType(vars) !== 'String' && whatType(vars) !== 'Array') {
     throw new TypeError('Second argument: Expected a variable name (string) or array of variable names.');
   }
@@ -396,7 +395,7 @@ const map = async (table, vars, f) => {
 
   const mapTable = t => [].concat(vars).map(k => t[k].map(f));
 
-  return assign(table, apply(table, mapTable));
+  return assign(dt, apply(dt, mapTable));
 };
 
 
@@ -411,6 +410,8 @@ module.exports = {
   fromRemoteJsonTable,
   previewDataFile,
   previewRemoteData,
+  apply,
+  apply2,
   head,
   size,
   // describe, - like pandas function
