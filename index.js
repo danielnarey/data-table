@@ -264,7 +264,7 @@ const fromJsonTable = async (filepath) => {
     console.log(error);
   }
 
-  return table;
+  return dt;
 };
 
 
