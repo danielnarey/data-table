@@ -393,7 +393,7 @@ module.exports = {
   size,
   // describe, - like pandas function
   variables,
-  observations, - returns array value of key
+  observations,
   // select, - drop variables not selected
   assign,
   // filter,
