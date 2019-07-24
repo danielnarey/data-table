@@ -15,7 +15,5 @@ plugins:
 
 rules:
   no-console: off
-  import/no-extraneous-dependencies:
-    devDependencies: true
   types/assign-type: error
   types/array-type: error
