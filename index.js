@@ -87,16 +87,21 @@ const apply2 = async (dt1, dt2, f, ...args) => {
 
 // Functions on data tables
 
-const assign = (dt, update) => {
+const assign = async (dt, update) => {
   const f = (a, b) => Object.assign({}, a, b);
-
-  return apply2(dt, update, f);
+  const combined = await apply2(dt, update, f);
+  
+  if (!(await isDataTable(combined))) {
+    throw new Error('Assign failed because the two data tables do not have the same number of observations (i.e., arrays are not of the same length).');
+  }
+  
+  return combined;
 };
 
 
 const mapVars = (dt, varNames, f) => {
-  if (whatType(varNames) !== 'String' && whatType(varNames) !== 'Array') {
-    throw typeError2('a variable name (string) or array of variable names');
+  if (whatType(varNames) !== 'Array') {
+    throw typeError2('an array of variable names');
   }
 
   if (whatType(f) !== 'Function') {
@@ -111,8 +116,8 @@ const mapVars = (dt, varNames, f) => {
 
 
 const mapValues = (dt, varNames, f) => {
-  if (whatType(varNames) !== 'String' && whatType(varNames) !== 'Array') {
-    throw typeError2('a variable name (string) or array of variable names');
+  if (whatType(varNames) !== 'Array') {
+    throw typeError2('an array of variable names');
   }
 
   if (whatType(f) !== 'Function') {
@@ -133,7 +138,7 @@ const variables = (dt) => {
 };
 
 
-const observations = (dt, varName) => {
+const values = (dt, varName) => {
   if (whatType(varName) !== 'String') {
     throw typeError2('a variable name (string)');
   }
