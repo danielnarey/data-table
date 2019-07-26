@@ -42,13 +42,13 @@ Given a data table and a variable name, returns a promise for an array containin
 
 ### index
 
-**`promise<dataTable>, number => promise<object>`**
+**`promise<dataTable>, number:int => promise<object>`**
 
 Given a data table and a valid index, returns a promise for an object containing the value of each variable at that index, which represents a single observation across all variables in the data set.
 
 ### head
 
-**`promise<dataTable>, [number] => promise<dataTable>`**
+**`promise<dataTable>, [number:int] => promise<dataTable>`**
 
 Given a data table and an optional output size `n` (defaults to 5), returns a promise for a data table containing only the first `n` observations.
 
@@ -94,8 +94,8 @@ Given a data table and an array of variable names, returns a promise for a data 
 
 ### filter
 
-**`promise<dataTable>, array<boolean> => promise<dataTable>`**
+**`promise<dataTable>, function<object, [number:int], [dataTable] => boolean>  => promise<dataTable>`**
 
-Given a data table and an array of boolean values equal in length to the number of observations, returns a promise for a data table filtered according to the true/false values of the boolean array, where `true` means keep and `false` means drop.
+Given a data table and a filtering function, returns a promise for a data table filtered according the return values of the function, where `true` means keep and `false` means drop. The filtering function's first parameter is an object containing the value of each variable at index `i`, the second (optional) parameter is the value of `i`, and the third (optional) parameter is the data table being filtered. Analogous to `Array.prototype.filter`.
 
 ### sample
