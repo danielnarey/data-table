@@ -4,7 +4,7 @@ const neatCsv = require('neat-csv');
 const stats = require('simple-statistics');
 
 
-//---TYPE CHECKING---//
+//---TYPE CHECKING (WITH PROMISED VALUES)---//
 
 // INTERNAL
 // [*] => string
@@ -24,9 +24,45 @@ const whatType = (value) => {
 // INTERNAL
 // [*] => promise<boolean>
 const isPrimitive = type => async (promise) => {
-  const value = await promise;
+  try {
+    const value = await promise;
+    return whatType(value) === type;
+  } catch {
+    return false;
+  }
+};
+
+
+// INTERNAL
+// [*] => promise<boolean>
+const isRejected = async (promise) => {
+  if (whatType(promise) !== 'Promise') {
+    return false;
+  }
   
-  return whatType(value) === type;
+  try {
+    await promise;
+    return false;
+  } catch {
+    return true;
+  }
+};
+
+
+// INTERNAL
+// [*] => promise<boolean>
+const isTypedArray = type => async (promise) => {
+  try {
+    const array = await promise;
+  
+    if (whatType(array) !== 'Array') {
+      return false;
+    }
+  
+    return array.every(x => whatType(x) === type);
+  } catch {
+    return false;
+  }
 };
 
 
@@ -43,19 +79,6 @@ const isNumber = isPrimitive('Number');
 // EXPOSED
 // [*] => promise<boolean>
 const isBoolean = isPrimitive('Boolean');
-
-
-// INTERNAL
-// [*] => promise<boolean>
-const isTypedArray = type => async (promise) => {
-  const array = await promise;
-  
-  if (whatType(array) !== 'Array') {
-    return false;
-  }
-  
-  return array.every(x => whatType(x) === type);
-};
 
 
 // EXPOSED
@@ -104,8 +127,11 @@ const isDataTable = async (promise) => {
 };
 
 
+//---HANDLING TYPE ERRORS (WITH PROMISED VALUES)---//
+
+
 // INTERNAL
-// () => object
+// object:{NAME:{desc, test}}
 const types = {
   string: {
     desc: 'a string or a promise resolving to a string',
@@ -118,6 +144,10 @@ const types = {
   boolean: {
     desc: 'a boolean or a promise resolving to a boolean',
     test: isBoolean,
+  },
+  function: {
+    desc: 'a function or a promise resolving to a function',
+    test: isFunction,
   },
   stringArray: {
     desc: 'a string array or a promise resolving to a string array',
@@ -138,39 +168,144 @@ const types = {
 };
 
 
-// INTERNAL
-// number:boundedInt<1;5>, promise<*>, function<promise<*> => promise<boolean>>, string => promise<*>  
-const typeCheck = async (ordinal, promise, typeDef) => {
-  const ordinalString = ['First', 'Second', 'Third', 'Fourth', 'Fifth'][ordinal - 1];
+// INTERNAL 
+// number:boundedInt<1;5> => string
+const ordinalString = n => {
+  if (whatType(n) !== 'Number' || n < 1 || n > 5) {
+    throw new Error('Improper argument to `ordinalString` function: (number:boundedInt<1;5> => string);
+  }
+
+  return [
+    'First',
+    'Second',
+    'Third',
+    'Fourth',
+    'Fifth',
+  ][n - 1];
+};
   
+
+// INTERNAL
+// number:boundedInt<1;5>, promise<*>, object:{desc, test} => promise<*>  
+const typeCheck = async (ordinal, promise, typeDef) => {
   if (!(await typeDef.test(promise))) {
-    throw new TypeError(`${ordinalString} argument: Expected ${typeDef.desc}.`);
+    throw new TypeError(`${ordinalString(ordinal)} argument: Expected ${typeDef.desc}.`);
   }
   
   return await promise;
 };
 
 
-//---FUNCTIONAL TRANSFORMS---//
+// INTERNAL
+// number:boundedInt<1;5>, promise<*>, array<object:{desc, test}> => promise<*>
+const typeCheckAny = async (ordinal, promise, typeDefs) => { 
+  const iterator = async (i) => {
+    if (i >= typeDefs.length) {
+      const oneOf = typeDefs.map(td => td.desc).join(' *OR* ');
+      throw new TypeError(`${ordinalString(ordinal)} argument: Expected ${oneOf}.`);
+    }
+    
+    try {
+      return await typeCheck(ordinal, promise, typeDefs[i]);
+    } catch {
+      return iterator(i + 1);    
+    }
+  }
 
-const apply = async (promise, f, ...args) => {
-  const dt = await typeCheck(1, promise, types.dataTable);
-  
-  return f(...[].concat(dt, args));
+  return await iterator(0);
 };
 
 
-const apply2 = async (promise1, promise2, f, ...args) => {
-  const dt1 = await typeCheck(1, promise1, types.dataTable);
-  const dt2 = await typeCheck(2, promise2, types.dataTable);
+//---FUNCTION APPLICATION (WITH IMPLICIT PROMISE CHAINING)---//
+
+// EXPOSED 
+// dataTable, function<dataTable, [**] => *>, [**] => * 
+const apply = async (dt, f, ...args) => {
+  const _dt = await typeCheck(1, dt, types.dataTable);
+  const _f = await typeCheck(2, f, types.function);
   
-  return f(...[].concat(dt1, dt2, args));
+  return _f(...[].concat(_dt, args));
 };
 
 
-const assign = async (dt, update) => {
+// EXPOSED 
+// dataTable, dataTable, function<dataTable, dataTable, [**] => *>, [**] => *
+const apply2 = async (dt1, dt2, f, ...args) => {
+  const _dt1 = await typeCheck(1, dt1, types.dataTable);
+  const _dt2 = await typeCheck(2, dt2, types.dataTable);
+  const _f = await typeCheck(3, f, types.function);
+  
+  return _f(...[].concat(_dt1, _dt2, args));
+};
+
+
+//---GETTING VARIABLE NAMES AND OBSERVED VALUES---//
+
+// EXPOSED
+// dataTable => array<string>
+const variables = dt => apply(dt, Object.keys);
+
+
+// EXPOSED
+// dataTable, string => array
+const values = (dt, varName) => {
+  const _varName = await typeCheck(1, varName, types.string);
+
+  return apply(dt, x => x[_varName]);
+};
+
+
+//---MAPPING AND CHAINING FUNCTIONS---//
+
+// EXPOSED 
+// dataTable, function<array => *> => object
+const map = (dt, f) => {
+  const _f = await typeCheck(2, f, types.function);
+  const varNames = await variables(dt);
+
+  const r = _dt => (a, k) => Object.assign({}, a, { [k]: _f(_dt[k]) });
+  const ft = _dt => varNames.reduce(r(_dt), {});
+
+  return apply(dt, ft);
+};
+
+
+// EXPOSED
+// dataTable, array<function> => *
+const pipe = (dt, fArray) => {
+  const _dt = await typeCheck(1, dt, types.dataTable);
+  const _fArray = await typeCheck(2, fArray, types.functionArray);
+
+  const iterator = (lastResult, i) => {
+    if (i >= _fArray.length) {
+      return lastResult;
+    }
+    
+    return iterator(apply(lastResult, _fArray[i]), i + 1);
+  }
+
+  return iterator(_dt, 0);
+};
+
+
+//---SUBSETTING, COMBINING, AND REPLACING VARIABLES---//
+
+// EXPOSED
+// dataTable, array<string> => dataTable
+const select = async (dt, varNames) => {
+  const _varNames = await typeCheck(2, varNames, types.stringArray);
+
+  const r = _dt => (a, k) => Object.assign({}, a, { [k]: _dt[k] });
+  const ft = _dt => _varNames.reduce(r(_dt), {});
+
+  return apply(dt, ft);
+};
+
+// EXPOSED 
+// dataTable, dataTable => dataTable
+const assign = async (dt1, dt2) => {
   const f = (a, b) => Object.assign({}, a, b);
-  const combined = await apply2(dt, update, f);
+  const combined = await apply2(dt1, dt2, f);
   
   if (!(await isDataTable(combined))) {
     throw new Error('Assign failed because the two data tables do not have the same number of observations (i.e., arrays are not of the same length).');
@@ -179,22 +314,6 @@ const assign = async (dt, update) => {
   return combined;
 };
 
-
-const mapVars = (dt, varNames, f) => {
-  typeCheck(2, varNames, types.arrayString)
-  if (whatType(varNames) !== 'Array') {
-    throw typeError(2, 'an array of variable names');
-  }
-
-  if (whatType(f) !== 'Function') {
-    throw typeError(3, 'a function');
-  }
-
-  const r = t => (a, k) => Object.assign({}, a, { [k]: f(t[k]) });
-  const ft = t => [].concat(varNames).reduce(r(t), {});
-
-  return assign(dt, apply(dt, ft));
-};
 
 
 const mapValues = (dt, varNames, f) => {
@@ -213,22 +332,7 @@ const mapValues = (dt, varNames, f) => {
 };
 
 
-const variables = (dt) => {
-  const f = x => Object.keys(x);
 
-  return apply(dt, f);
-};
-
-
-const values = (dt, varName) => {
-  if (whatType(varName) !== 'String') {
-    throw typeError(2, 'a variable name (string)');
-  }
-
-  const f = x => x[varName];
-
-  return apply(dt, f);
-};
 
 
 const head = async (dt, n = 5) => {
