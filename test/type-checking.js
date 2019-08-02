@@ -41,5 +41,5 @@ test('isString', async (t) => {
   t.false(await check.isString(undef));
   t.false(await check.isString(pUndef));
   
-  t.throwsAsync(() => check.isString(pReject));
+  await t.throwsAsync(() => check.isString(pReject));
 });
