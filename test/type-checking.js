@@ -7,7 +7,7 @@ const num = 1.1;
 const bool = true;
 const func = () => 'apple';
 const obj = { a: 'apple' };
-const arr = [ 'apple', 'orange', 'pear' ];
+const arr = ['apple', 1.1, true];
 const nll = null;
 const undef = {}.a;
 
@@ -21,6 +21,23 @@ const pArr = Promise.resolve(arr);
 const pNll = Promise.resolve(nll);
 const pUndef = Promise.resolve(undef);
 const pReject = Promise.reject(new Error('Fail'));
+
+// typed array test values
+const mixedArray = ['apple', 1.1, true];
+const strArray = ['apple', 'orange', 'pear'];
+const numArray = [1.1, 1.2, 1.3];
+const boolArray = [true, true, false];
+const funcArray = [() => 'apple', (n) => 1.1 + n, (b) => !b];
+const emptyArray = [];
+
+// promised typed array test values
+const pMixedArray = Promise.resolve(mixedArray);
+const pStrArray = Promise.resolve(strArray);
+const pNumArray = Promise.resolve(numArray);
+const pBoolArray = Promise.resolve(boolArray);
+const pFuncArray = Promise.resolve(funcArray);
+const pEmptyArray = Promise.resolve(emptyArray);
+
 
 test('isString', async (t) => {
   t.true(await check.isString(str));
@@ -151,4 +168,26 @@ test('isArray', async (t) => {
   t.false(await check.isArray(undef));
   t.false(await check.isArray(pUndef));
   t.false(await check.isArray(pReject));
+});
+
+test('isStringArray', async (t) => {
+  t.true(await check.isStringArray(strArray));
+  t.true(await check.isStringArray(pStrArray));
+  t.true(await check.isStringArray(strArray.map(x => Promise.resolve(x)));
+  
+  t.false(await check.isStringArray(numArray));
+  t.false(await check.isStringArray(pNumArray));
+  t.false(await check.isStringArray(boolArray));
+  t.false(await check.isStringArray(pBoolArray));
+  t.false(await check.isStringArray(funcArray));
+  t.false(await check.isStringArray(pFuncArray));
+  t.false(await check.isStringArray(mixedArray));
+  t.false(await check.isStringArray(pMixedArray));
+  t.false(await check.isStringArray(obj));
+  t.false(await check.isStringArray(pObj));
+  t.false(await check.isStringArray(nll));
+  t.false(await check.isStringArray(pNll));
+  t.false(await check.isStringArray(undef));
+  t.false(await check.isStringArray(pUndef));
+  t.false(await check.isStringArray(pReject));
 });
