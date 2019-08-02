@@ -38,6 +38,22 @@ const pBoolArray = Promise.resolve(boolArray);
 const pFuncArray = Promise.resolve(funcArray);
 const pEmptyArray = Promise.resolve(emptyArray);
 
+// data table test values
+const dt = { a: strArray, b: numArray, c: boolArray, d: funcArray, e: mixedArray };
+const dtNoValues = { a: [] };
+const emptyObj = {};
+const dtNotArray = { a: { x: 1 } };
+const dtUnequalObs = { a: strArray, b: ['banana'] };
+const dtPromisedArrays = { a: pStrArray, b: pNumArray };
+
+// promised data table test values
+const pDt = Promise.resolve(dt);
+const pDtNoValues = Promise.resolve(dtNoValues);
+const pEmptyObj = Promise.resolve(emptyObj);
+const pDtNotArray = Promise.resolve(dtNotArray);
+const pDtUnequalObs = Promise.resolve(dtUnequalObs);
+const pDtPromisedArrays = Promise.resolve(dtPromisedArrays);
+
 
 test('isString', async (t) => {
   t.true(await check.isString(str));
@@ -257,3 +273,20 @@ test('isFunctionArray', async (t) => {
   t.false(await check.isFunctionArray(pMixedArray));
 });
 
+
+test('isDataTable', async (t) => {
+  t.true(await check.isDataTable(dt));
+  t.true(await check.isDataTable(pDt));
+
+  t.true(await check.isDataTable(dtNoValues));
+  t.true(await check.isDataTable(pDtNoValues));
+  
+  t.false(await check.isDataTable(emptyObj));
+  t.false(await check.isDataTable(pEmptyObj));
+  t.false(await check.isDataTable(dtNotArray));
+  t.false(await check.isDataTable(pDtNotArray));
+  t.false(await check.isDataTable(dtUnequalObs));
+  t.false(await check.isDataTable(pDtUnequalObs));
+  t.false(await check.isDataTable(dtPromisedArrays));
+  t.false(await check.isDataTable(pDtPromisedArrays));
+});
