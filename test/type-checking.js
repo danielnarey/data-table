@@ -173,7 +173,7 @@ test('isArray', async (t) => {
 test('isStringArray', async (t) => {
   t.true(await check.isStringArray(strArray));
   t.true(await check.isStringArray(pStrArray));
-  t.true(await check.isStringArray(strArray.map(x => Promise.resolve(x)));
+  t.true(await check.isStringArray(strArray.map(x => Promise.resolve(x))));
   
   t.false(await check.isStringArray(numArray));
   t.false(await check.isStringArray(pNumArray));
