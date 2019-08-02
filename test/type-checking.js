@@ -173,7 +173,11 @@ test('isArray', async (t) => {
 test('isStringArray', async (t) => {
   t.true(await check.isStringArray(strArray));
   t.true(await check.isStringArray(pStrArray));
-  t.true(await check.isStringArray(strArray.map(x => Promise.resolve(x))));
+  
+  t.false(await check.isStringArray(strArray.map(x => Promise.resolve(x))));
+  
+  t.true(await check.isStringArray(emptyArray);
+  t.true(await check.isStringArray(pEmptyArray);
   
   t.false(await check.isStringArray(numArray));
   t.false(await check.isStringArray(pNumArray));
@@ -183,6 +187,7 @@ test('isStringArray', async (t) => {
   t.false(await check.isStringArray(pFuncArray));
   t.false(await check.isStringArray(mixedArray));
   t.false(await check.isStringArray(pMixedArray));
+  
   t.false(await check.isStringArray(obj));
   t.false(await check.isStringArray(pObj));
   t.false(await check.isStringArray(nll));
@@ -191,3 +196,64 @@ test('isStringArray', async (t) => {
   t.false(await check.isStringArray(pUndef));
   t.false(await check.isStringArray(pReject));
 });
+
+
+test('isNumberArray', async (t) => {
+  t.true(await check.isNumberArray(numArray));
+  t.true(await check.isNumberArray(pNumArray));
+  
+  t.false(await check.isNumberArray(numArray.map(x => Promise.resolve(x))));
+  
+  t.true(await check.isNumberArray(emptyArray);
+  t.true(await check.isNumberArray(pEmptyArray);
+  
+  t.false(await check.isNumberArray(strArray));
+  t.false(await check.isNumberArray(pStrArray));
+  t.false(await check.isNumberArray(boolArray));
+  t.false(await check.isNumberArray(pBoolArray));
+  t.false(await check.isNumberArray(funcArray));
+  t.false(await check.isNumberArray(pFuncArray));
+  t.false(await check.isNumberArray(mixedArray));
+  t.false(await check.isNumberArray(pMixedArray));
+});
+
+
+test('isBooleanArray', async (t) => {
+  t.true(await check.isBooleanArray(boolArray));
+  t.true(await check.isBooleanArray(pBoolArray));
+  
+  t.false(await check.isBooleanArray(boolArray.map(x => Promise.resolve(x))));
+  
+  t.true(await check.isBooleanArray(emptyArray);
+  t.true(await check.isBooleanArray(pEmptyArray);
+  
+  t.false(await check.isBooleanArray(strArray));
+  t.false(await check.isBooleanArray(pStrArray));
+  t.false(await check.isBooleanArray(numArray));
+  t.false(await check.isBooleanArray(pNumArray));
+  t.false(await check.isBooleanArray(funcArray));
+  t.false(await check.isBooleanArray(pFuncArray));
+  t.false(await check.isBooleanArray(mixedArray));
+  t.false(await check.isBooleanArray(pMixedArray));
+});
+
+
+test('isFunctionArray', async (t) => {
+  t.true(await check.isFunctionArray(funcArray));
+  t.true(await check.isFunctionArray(pFuncArray));
+  
+  t.false(await check.isFunctionArray(funcArray.map(x => Promise.resolve(x))));
+  
+  t.true(await check.isFunctionArray(emptyArray);
+  t.true(await check.isFunctionArray(pEmptyArray);
+  
+  t.false(await check.isFunctionArray(strArray));
+  t.false(await check.isFunctionArray(pStrArray));
+  t.false(await check.isFunctionArray(numArray));
+  t.false(await check.isFunctionArray(pNumArray));
+  t.false(await check.isFunctionArray(boolArray));
+  t.false(await check.isFunctionArray(pBoolArray));
+  t.false(await check.isFunctionArray(mixedArray));
+  t.false(await check.isFunctionArray(pMixedArray));
+});
+
