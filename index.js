@@ -4,7 +4,7 @@ const neatCsv = require('neat-csv');
 const stats = require('simple-statistics');
 
 
-//---TYPE CHECKING (WITH PROMISED VALUES)---//
+//---TYPE CHECKING WITH PROMISES---//
 
 // INTERNAL
 // [*] => string
@@ -127,11 +127,11 @@ const isDataTable = async (promise) => {
 };
 
 
-//---HANDLING TYPE ERRORS (WITH PROMISED VALUES)---//
+//---HANDLING TYPE ERRORS (WITH PROMISES)---//
 
 
 // INTERNAL
-// object:{NAME:{desc, test}}
+// object:{#:{desc$string, test$function<[*] => boolean>}}
 const types = {
   string: {
     desc: 'a string or a promise resolving to a string',
@@ -168,6 +168,24 @@ const types = {
 };
 
 
+// INTERNAL
+// object:{#:{desc$string, test$function<[*] => boolean>}}
+const extensions = {
+  int: {
+    desc: 'an integer',
+    test: Number.isInteger,
+  },
+  boundedInt: (min, max) => ({
+    desc: `an integer not less than ${min} and not greater than ${max}`,
+    test: n => Number.isInteger(n) && n >= min && n <= max,
+  }),
+  leftBoundedInt: (min) => ({
+    desc: `an integer not less than ${min}`,
+    test: n => Number.isInteger(n) && n >= min,
+  }),
+};
+
+
 // INTERNAL 
 // number:boundedInt<1;5> => string
 const ordinalString = n => {
@@ -186,19 +204,25 @@ const ordinalString = n => {
   
 
 // INTERNAL
-// number:boundedInt<1;5>, promise<*>, object:{desc, test} => promise<*>  
-const typeCheck = async (ordinal, promise, typeDef) => {
+// number:boundedInt<1;5>, promise, object:{desc$string, test$function<[*] => boolean>}, [object:{desc$string, test$function<[*] => boolean>}] => promise
+const typeCheck = async (ordinal, promise, typeDef, extended = null) => {
   if (!(await typeDef.test(promise))) {
     throw new TypeError(`${ordinalString(ordinal)} argument: Expected ${typeDef.desc}.`);
   }
   
-  return await promise;
+  const value = await promise;
+
+  if (extended && !(extended.test(value))) {
+    throw new TypeError(`${ordinalString(ordinal)} argument: Expected ${extended.desc}.`);
+  }
+  
+  return value;
 };
 
 
 // INTERNAL
-// number:boundedInt<1;5>, promise<*>, array<object:{desc, test}> => promise<*>
-const typeCheckAny = async (ordinal, promise, typeDefs) => { 
+// number:boundedInt<1;5>, promise, array<object:{desc$string, test$function<[*] => boolean>}, [array<object:{desc$string, test$function<[*] => boolean>}]> => promise
+const typeCheckAny = async (ordinal, promise, typeDefs, extensions = []) => { 
   const iterator = async (i) => {
     if (i >= typeDefs.length) {
       const oneOf = typeDefs.map(td => td.desc).join(' *OR* ');
@@ -206,7 +230,7 @@ const typeCheckAny = async (ordinal, promise, typeDefs) => {
     }
     
     try {
-      return await typeCheck(ordinal, promise, typeDefs[i]);
+      return await typeCheck(ordinal, promise, typeDefs[i], extensions[i]);
     } catch {
       return iterator(i + 1);    
     }
@@ -239,40 +263,31 @@ const apply2 = async (dt1, dt2, f, ...args) => {
 };
 
 
-//---GETTING VARIABLE NAMES AND OBSERVED VALUES---//
-
-// EXPOSED
-// dataTable => array<string>
-const variables = dt => apply(dt, Object.keys);
-
-
-// EXPOSED
-// dataTable, string => array
-const values = (dt, varName) => {
-  const _varName = await typeCheck(1, varName, types.string);
-
-  return apply(dt, x => x[_varName]);
-};
-
-
-//---MAPPING AND CHAINING FUNCTIONS---//
+//---HIGHER ORDER FUNCTIONS---//
 
 // EXPOSED 
 // dataTable, function<array => *> => object
-const map = (dt, f) => {
+const map = async (dt, f) => {
   const _f = await typeCheck(2, f, types.function);
   const varNames = await variables(dt);
 
-  const r = _dt => (a, k) => Object.assign({}, a, { [k]: _f(_dt[k]) });
-  const ft = _dt => varNames.reduce(r(_dt), {});
+  const r = obj => (a, k) => Object.assign({}, a, { [k]: _f(obj[k]) });
+  const f = obj => varNames.reduce(r(obj), {});
 
-  return apply(dt, ft);
+  return apply(dt, f);
+};
+
+
+// EXPOSED
+// dataTable, function<*, array, string>, * => *   
+const reduce = async (dt, r, initial) => {
+
 };
 
 
 // EXPOSED
 // dataTable, array<function> => *
-const pipe = (dt, fArray) => {
+const pipe = async (dt, fArray) => {
   const _dt = await typeCheck(1, dt, types.dataTable);
   const _fArray = await typeCheck(2, fArray, types.functionArray);
 
@@ -288,20 +303,77 @@ const pipe = (dt, fArray) => {
 };
 
 
-//---SUBSETTING, COMBINING, AND REPLACING VARIABLES---//
+//---GETTING TABLE SIZE, VARIABLE NAMES, AND VALUE ARRAYS---//
+
+// EXPOSED
+// dataTable => object:{variables$number:int, observations$number:int}
+const size = async (dt) => {
+  const varNames = await variables(dt);
+  const firstArray = await observations(dt, varNames[0]);
+
+  return {
+    variables: varNames.length,
+    observations: firstArray.length,
+  };
+};
+
+
+// EXPOSED
+// dataTable => array<string>
+const variables = dt => apply(dt, Object.keys);
+
+
+// EXPOSED
+// dataTable, string => array
+const values = async (dt, varName) => {
+  const _varName = await typeCheck(2, varName, types.string);
+
+  return apply(dt, x => x[_varName]);
+};
+
+
+// EXPOSED
+// dataTable, string => array
+const unique = async (dt, varName) => {
+
+};
+
+
+// EXPOSED
+// dataTable => object
+const describe = async (dt) => {
+
+};
+
+
+//---SUBSETTING AND COMBINING VARIABLE SETS---//
 
 // EXPOSED
 // dataTable, array<string> => dataTable
 const select = async (dt, varNames) => {
   const _varNames = await typeCheck(2, varNames, types.stringArray);
 
-  const r = _dt => (a, k) => Object.assign({}, a, { [k]: _dt[k] });
-  const ft = _dt => _varNames.reduce(r(_dt), {});
+  const r = obj => (a, k) => Object.assign({}, a, { [k]: obj[k] });
+  const f = obj => _varNames.reduce(r(obj), {});
 
-  return apply(dt, ft);
+  return apply(dt, f);
 };
 
-// EXPOSED 
+
+// EXPOSED
+// dataTable, function<array => boolean> => dataTable
+const include = async (dt, test) => {
+  const _dt = await typeCheck(1, dt, types.dataTable);
+  const _test = await typeCheck(2, test, types.function);
+
+  const varNames = await variables(_dt);
+  const included = varNames.filter(v => test(_dt[v]));
+
+  return select(_dt, included);
+};
+
+
+// EXPOSED
 // dataTable, dataTable => dataTable
 const assign = async (dt1, dt2) => {
   const f = (a, b) => Object.assign({}, a, b);
@@ -315,49 +387,40 @@ const assign = async (dt1, dt2) => {
 };
 
 
-
-const mapValues = (dt, varNames, f) => {
-  if (whatType(varNames) !== 'Array') {
-    throw typeError(2, 'an array of variable names');
-  }
-
-  if (whatType(f) !== 'Function') {
-    throw typeError(3, 'a function');
-  }
-
-  const r = t => (a, k) => Object.assign({}, a, { [k]: t[k].map(f) });
-  const ft = t => [].concat(varNames).reduce(r(t), {});
-
-  return assign(dt, apply(dt, ft));
-};
-
-
-
-
-
-const head = async (dt, n = 5) => {
-  if (whatType(n) !== 'Number') {
-    throw typeError2('an integer');
-  }
-
-  const varNames = await variables(dt);
-  const f = x => x.slice(0, n);
-
-  return mapVars(dt, varNames, f);
-};
-
-
-const size = async (dt) => {
-  const varNames = await variables(dt);
-  const firstArray = await observations(dt, varNames[0]);
-
-  return {
-    variables: varNames.length,
-    observations: firstArray.length,
+// EXPOSED
+// array<dataTable>, [array<string>], [string] => dataTable
+const concat = async (dtArray, tableNames = [], separator = ':') => {
+  const _dtArray = typeCheck(1, dtArray, types.dataTableArray);
+  const _tableNames = typeCheck(2, tableNames, types.stringArray);
+  const _separator = typeCheck(3, separator, types.string);
+  
+  const r1 = obj => (a, k, i) => {
+    const prefix = (i < _tableNames.length) ? _tableNames[i] : `table-${i}`;
+    return Object.assign({}, a, { [`${prefix}${_separator}${k}`]: obj[k] });
   };
+  
+  const r2 = (a, k) => {
+    const prefixed = Object.keys(k).reduce(r1, {});
+    return Object.assign({}, a, prefixed);
+  };
+  
+  return _dtArray.reduce(r2, {});
 };
 
 
+//---SUBSETTING AND COMBINING OBSERVATION SETS---//
+
+// EXPOSED
+// dataTable, number:leftBoundedInt(1) => dataTable
+const head = async (dt, n = 5) => {
+  const _n = typeCheck(2, n, types.number, extensions.leftBoundedInt(1));
+
+  return map(dt, x => x.slice(0, _n));
+};
+
+
+// EXPOSED
+// dataTable, number:leftBoundedInt(1) => dataTable
 const sample = async (dt, n) => {
   if (whatType(n) !== 'Number') {
     throw typeError2('an integer');
@@ -372,7 +435,42 @@ const sample = async (dt, n) => {
 };
 
 
-// Conversion and loading from data sources
+// EXPOSED
+// dataTable, function<object => boolean> => dataTable
+const filter = async (dt, test) => {
+
+};
+
+
+// EXPOSED
+// dataTable, dataTable => dataTable
+const append = async (dt1, dt2) => {
+
+};
+
+
+//---REORDERING AND TRANSFORMING TABLES---//
+
+// dataTable, function<object => number> => dataTable
+const arrange = async (dt, compare) => {
+
+};
+
+const classify
+
+const cut 
+
+const splice
+
+const spread
+
+const gather
+
+const aggregate
+
+
+
+//---IMPORTING DATA AND CONVERTING TO TABLE FORMAT---//
 
 const fromArray = jsArray => new Promise((resolve, reject) => {
   if (whatType(jsArray) !== 'Array') {
@@ -565,6 +663,8 @@ const previewRemoteData = (url, bytes = 500, encoding = 'utf8') => new Promise((
 });
 
 
+//---PRINTING AND EXPORTING DATA---//
+
 module.exports = {
   isDataTable,
   fromArray,
@@ -592,7 +692,6 @@ module.exports = {
   // arrange, - reorder indexes
   // reduce, - example: combining m d y min sec to datetime
   // aggregate,
-  // summarize, - supply summary function for each key
   // spread,
   // gather,
   // display, - pretty print table
