@@ -5,8 +5,6 @@ const stats = require('simple-statistics');
 const { typeCheck, types, extensions } = require('./type-errors.js');
 
 
-
-
 //---FUNCTION APPLICATION (WITH IMPLICIT PROMISE CHAINING)---//
 
 // EXPOSED 
@@ -82,7 +80,7 @@ const reduce = async (dt, r, initial) => {
 };
 
 
-//---GETTING TABLE SIZE, VARIABLE NAMES, AND VALUE ARRAYS---//
+//---GETTING TABLE SIZE, VARIABLE NAMES, AND VALUES---//
 
 // EXPOSED
 // dataTable => object:{variables$number:int, observations$number:int}
@@ -103,6 +101,15 @@ const variables = dt => apply(dt, Object.keys);
 
 
 // EXPOSED
+// dataTable, number:int => object
+const observation = async (dt, n) => {
+  const _n = await typeCheck(2, n, types.number, extensions.int);
+
+  return map(dt, x => x[_n]);
+}
+
+
+// EXPOSED
 // dataTable, string => array
 const values = async (dt, varName) => {
   const _varName = await typeCheck(2, varName, types.string);
@@ -113,9 +120,7 @@ const values = async (dt, varName) => {
 
 // EXPOSED
 // dataTable, string => array
-const unique = async (dt, varName) => {
-
-};
+const unique = async (dt, varName) => [...new Set(values(dt, varName))];
 
 
 // EXPOSED
@@ -201,9 +206,9 @@ const head = async (dt, n = 5) => {
 // EXPOSED
 // dataTable, number:leftBoundedInt(1) => dataTable
 const sample = async (dt, n) => {
-  const _n = typeCheck(2, n, types.number, extensions.leftBoundedInt(1));
+  const _n = await typeCheck(2, n, types.number, extensions.leftBoundedInt(1));
   const varNames = await variables(dt);
-  const firstArray = await observations(dt, varNames[0]);
+  const firstArray = await values(dt, varNames[0]);
   
   const selected = stats.sample([...firstArray.keys()], _n);
   const f = x => x.filter((c, i) => selected.includes(i));
@@ -212,10 +217,22 @@ const sample = async (dt, n) => {
 };
 
 
+// INTERNAL
+const toArray = async (dt) => {
+  const varNames = await variables(dt);
+  const firstArray = await values(dt, varNames[0]);
+  
+  return [...firstArray.keys()].map(i => observation(dt, i));
+};
+
+
 // EXPOSED
 // dataTable, function<object => boolean> => dataTable
 const filter = async (dt, test) => {
-
+  const _test = await typeCheck(2, test, types.function);
+  const observations = await toArray(dt);
+  
+  return fromArray(observations.filter(_test));
 };
 
 
@@ -253,35 +270,30 @@ const aggregate
 //---PRINTING AND EXPORTING DATA---//
 
 module.exports = {
-  isDataTable,
-  fromArray,
-  fromCsv,
-  fromJsonArray,
-  fromJsonTable,
-  fromRemoteCsv,
-  fromRemoteJsonArray,
-  fromRemoteJsonTable,
-  previewDataFile,
-  previewRemoteData,
   apply,
   apply2,
-  mapVars,
-  mapValues,
-  head,
+  pipe,
+  map,
+  reduce,
   size,
-  // describe, - like pandas function
   variables,
-  observations,
-  // select, - drop variables not selected
+  observation,
+  values,
+  unique,
+  describe,
+  select,
+  include,
   assign,
-  // filter,
+  concat,
+  head,
   sample,
-  // arrange, - reorder indexes
-  // reduce, - example: combining m d y min sec to datetime
-  // aggregate,
-  // spread,
-  // gather,
-  // display, - pretty print table
-  // outputJsonArray,
-  // outputJsonTable,
+  filter,
+  append,
+  arrange,
+  classify,
+  cut,
+  splice,
+  aggregate,
+  spread,
+  gather,
 };
