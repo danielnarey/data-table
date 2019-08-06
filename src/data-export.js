@@ -11,7 +11,7 @@ const toArray = async (dt) => {
 };
 
 
-modules.exports = {
+module.exports = {
   toArray,
   // display,
   // outputJson,
