@@ -113,8 +113,8 @@ test('values', async (t) => {
 
 
 test('unique', async (t) => {
-  t.deepEqual(await dt.values(table, 'var4'), [0.1, 0.2, 0.3]);
-  t.deepEqual(await dt.values(pTable, 'var4'), [0.1, 0.2, 0.3]);
+  t.deepEqual(await dt.unique(table, 'var4'), [0.1, 0.2, 0.3]);
+  t.deepEqual(await dt.unique(pTable, 'var4'), [0.1, 0.2, 0.3]);
 });
 
 
