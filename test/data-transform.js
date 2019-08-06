@@ -156,8 +156,21 @@ test('concat', async (t) => {
     'table1$var5': table2.var5,
   };
   
+  const expected2 = {
+    'alpha_var1': table.var1,
+    'alpha_var2': table.var2,
+    'alpha_var3': table.var3,
+    'alpha_var4': table.var4,
+    'alpha_var5': table.var5,
+    'beta_var3': table2.var3,
+    'beta_var5': table2.var5,
+  };
+  
   t.deepEqual(await dt.concat([table, table2]), expected);
   t.deepEqual(await dt.concat([table, table2]), expected);
+  
+  t.deepEqual(await dt.concat([table, table2], ['alpha', 'beta'], '_'), expected2);
+  t.deepEqual(await dt.concat([table, table2], ['alpha', 'beta'], '_'), expected2);
   
   await t.throwsAsync(async () => await dt.concat(table, { var6: [1, 2] }));
 });
