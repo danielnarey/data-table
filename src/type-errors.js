@@ -108,7 +108,7 @@ const types = {
   },
   dataTableArray: {
     desc: 'an array of data tables (or promises resolving to data tables)',
-    test: x => x.every(checkAsync.isDataTable);
+    test: x => x.every(checkAsync.isDataTable),
   },
 };
 
