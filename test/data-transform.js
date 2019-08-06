@@ -17,7 +17,7 @@ const empty = {};
 
 const pEmpty = Promise.resolve(empty);
 
-const pReject = Promise.reject(new Error('Fail'));
+const pReject = () => Promise.reject(new Error('Fail'));
 
 
 test('apply', async (t) => {
