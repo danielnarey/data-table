@@ -81,7 +81,7 @@ test('map2', async (t) => {
 
 
 test('reduce', async (t) => {
-  const f = (a, k, n) => Object.assign({}, a, [n]: k[0]);
+  const f = (a, k, i) => Object.assign({}, a, { [i]: k[0] });
    
   t.deepEqual(await dt.reduce(table, f, {}), obs0);
   t.deepEqual(await dt.reduce(pTable, f, {}), obs0);
