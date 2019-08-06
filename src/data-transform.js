@@ -178,7 +178,7 @@ const drop = async (dt, varNames) => {
 // dataTable, function<array => boolean> => dataTable
 const include = async (dt, test) => {
   const _dt = await typeCheck(1, dt, types.dataTable);
-  const _test = await typeCheck(2, test, types.function);
+  // const _test = await typeCheck(2, test, types.function);
   const keep = Object.keys(_dt).filter(v => test(_dt[v]));
 
   return select(_dt, keep);
