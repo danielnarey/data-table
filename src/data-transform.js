@@ -43,7 +43,7 @@ const pipe = async (dt, fArray) => {
       return lastResult;
     }
     
-    return iterator(apply(lastResult, _fArray[i]), i + 1);
+    return iterator(_fArray[i](lastResult), i + 1);
   }
 
   return iterator(_dt, 0);
