@@ -106,6 +106,10 @@ const types = {
     desc: 'a data table or a promise resolving to a data table',
     test: checkAsync.isDataTable,
   },
+  dataTableArray: {
+    desc: 'an array of data tables (or promises resolving to data tables)',
+    test: x => x.every(checkAsync.isDataTable);
+  },
 };
 
 
