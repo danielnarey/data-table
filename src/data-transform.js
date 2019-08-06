@@ -101,7 +101,7 @@ const reduce = async (dt, r, initial) => {
 // dataTable => object:{variables$number:int, observations$number:int}
 const size = async (dt) => {
   const varNames = await variables(dt);
-  const firstArray = await observations(dt, varNames[0]);
+  const firstArray = await values(dt, varNames[0]);
 
   return {
     variables: varNames.length,
