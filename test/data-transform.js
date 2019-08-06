@@ -11,7 +11,13 @@ const table = {
 
 const varNames = ['var1', 'var2', 'var3', 'var4', 'var5'];
 
-const obs0 = ['a', 'zz', 1, 0.1, true];
+const obs0 = {
+  var1: 'a', 
+  var2: 'zz', 
+  var3: 1, 
+  var4: 0.1, 
+  var5: true
+};
 
 const pTable = Promise.resolve(table);
 
