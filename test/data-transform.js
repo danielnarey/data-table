@@ -5,7 +5,7 @@ const table = {
   var1: ['a', 'b', 'c', 'd', 'e'],
   var2: ['zz', 'yy', 'xx', 'ww', 'vv'],
   var3: [1, 2, 3, 4, 5],
-  var4: [0.1, 0.2, 0.3, 0.4, 0.5],
+  var4: [0.1, 0.1, 0.2, 0.2, 0.3],
   var5: [true, true, true, false, false],
 };
 
@@ -112,4 +112,13 @@ test('values', async (t) => {
 });
 
 
+test('unique', async (t) => {
+  t.deepEqual(await dt.values(table, 'var4'), [0.1, 0.2, 0.3]);
+  t.deepEqual(await dt.values(pTable, 'var4'), [0.1, 0.2, 0.3]);
+});
 
+
+test('select', async (t) => {
+  t.deepEqual(await dt.select(table, ['var1', 'var3']), { var1: table.var1, var3: table.var3 });
+  t.deepEqual(await dt.select(pTable, ['var1', 'var3']), { var1: table.var1, var3: table.var3 });
+});
