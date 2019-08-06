@@ -41,6 +41,6 @@ test('apply', async (t) => {
 test('apply2', async (t) => {
   const f = (a, b, k) => Object.assign({}, a, b)[k];
   
-  t.deepEqual(await dt.apply(table, table2, f, 'var3'), table2.var3);
-  t.deepEqual(await dt.apply(pTable, pTable2, f, 'var3'), table2.var3);
+  t.deepEqual(await dt.apply2(table, table2, f, 'var3'), table2.var3);
+  t.deepEqual(await dt.apply2(pTable, pTable2, f, 'var3'), table2.var3);
 });
