@@ -88,3 +88,28 @@ test('reduce', async (t) => {
 });
 
 
+test('size', async (t) => {
+  t.deepEqual(await dt.size(table), { variables: 5, observations: 5 });
+  t.deepEqual(await dt.size(pTable), { variables: 5, observations: 5 });
+});
+
+
+test('variables', async (t) => {
+  t.deepEqual(await dt.variables(table), varNames);
+  t.deepEqual(await dt.variables(pTable), varNames);
+});
+
+
+test('observation', async (t) => {
+  t.deepEqual(await dt.observation(table, 0), obs0);
+  t.deepEqual(await dt.observation(pTable, 0), obs0);
+});
+
+
+test('values', async (t) => {
+  t.deepEqual(await dt.values(table, 'var1'), table.var1);
+  t.deepEqual(await dt.values(pTable, 'var1'), table.var1);
+});
+
+
+
