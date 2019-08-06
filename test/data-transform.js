@@ -1,5 +1,5 @@
 import test from 'ava';
-import check from '../src/type-checking';
+import checkSync from '../src/type-check-sync';
 import dt from '../src/data-transform';
 
 const table = {
@@ -132,6 +132,6 @@ test('drop', async (t) => {
 
 
 test('include', async (t) => {
-  t.deepEqual(await dt.include(table, check.isStringArray), { var1: table.var1, var2: table.var2 });
-  t.deepEqual(await dt.include(pTable, check.isStringArray), { var1: table.var1, var2: table.var2 });
+  t.deepEqual(await dt.include(table, checkSync.isStringArray), { var1: table.var1, var2: table.var2 });
+  t.deepEqual(await dt.include(pTable, checkSync.isStringArray), { var1: table.var1, var2: table.var2 });
 });

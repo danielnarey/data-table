@@ -1,18 +1,6 @@
 //---TYPE CHECKING WITH PROMISES---//
 
-// INTERNAL
-// [*] => string
-const whatType = (value) => {
-  if (value === undefined) {
-    return 'Undefined';
-  }
-
-  if (value === null) {
-    return 'Null';
-  }
-
-  return Object.prototype.toString.call(value).slice(8, -1);
-};
+const { whatType } = require('./type-check-sync');
 
 
 // INTERNAL
@@ -92,7 +80,6 @@ const isDataTable = async (promise) => {
 
 
 module.exports = {
-  whatType,
   isString: isPrimitive('String'),
   isNumber: isPrimitive('Number'),
   isBoolean: isPrimitive('Boolean'),

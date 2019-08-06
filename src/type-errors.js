@@ -1,19 +1,7 @@
 //---HANDLING TYPE ERRORS---//
 
-const {
-  whatType,
-  isString,
-  isNumber,
-  isBoolean,
-  isFunction,
-  isObject,
-  isArray,
-  isStringArray,
-  isNumberArray,
-  isBooleanArray,
-  isFunctionArray,
-  isDataTable,
-} = require('./type-checking.js');
+const { whatType } = require('./type-check-sync');
+const checkAsync = require('./type-check-async');
 
 
 // INTERNAL
@@ -76,47 +64,47 @@ const typeCheckAny = async (ordinal, promise, typeDefs, extensions = []) => {
 const types = {
   string: {
     desc: 'a string or a promise resolving to a string',
-    test: isString,
+    test: checkAsync.isString,
   },
   number: {
     desc: 'a number or a promise resolving to a number',
-    test: isNumber,
+    test: checkAsync.isNumber,
   },
   boolean: {
     desc: 'a boolean or a promise resolving to a boolean',
-    test: isBoolean,
+    test: checkAsync.isBoolean,
   },
   function: {
     desc: 'a function or a promise resolving to a function',
-    test: isFunction,
+    test: checkAsync.isFunction,
   },
   object: {
     desc: 'an object or a promise resolving to an object',
-    test: isObject,
+    test: checkAsync.isObject,
   },
   array: {
     desc: 'an array or a promise resolving to an array',
-    test: isArray,
+    test: checkAsync.isArray,
   },
   stringArray: {
     desc: 'a string array or a promise resolving to a string array',
-    test: isStringArray,
+    test: checkAsync.isStringArray,
   },
   numberArray: {
     desc: 'a number array or a promise resolving to a number array',
-    test: isNumberArray,
+    test: checkAsync.isNumberArray,
   },
   booleanArray: {
     desc: 'a boolean array or a promise resolving to a boolean array',
-    test: isBooleanArray,
+    test: checkAsync.isBooleanArray,
   },
   functionArray: {
     desc: 'a function array or a promise resolving to a boolean array',
-    test: isFunctionArray,
+    test: checkAsync.isFunctionArray,
   },
   dataTable: {
     desc: 'a data table or a promise resolving to a data table',
-    test: isDataTable,
+    test: checkAsync.isDataTable,
   },
 };
 
