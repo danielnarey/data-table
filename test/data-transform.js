@@ -147,13 +147,13 @@ test('assign', async (t) => {
 
 test('concat', async (t) => {
   const expected = {
-    'table1$var1': table.var1,
-    'table1$var2': table.var2,
-    'table1$var3': table.var3,
-    'table1$var4': table.var4,
-    'table1$var5': table.var5,
-    'table2$var3': table2.var3,
-    'table2$var5': table2.var5,
+    'table0$var1': table.var1,
+    'table0$var2': table.var2,
+    'table0$var3': table.var3,
+    'table0$var4': table.var4,
+    'table0$var5': table.var5,
+    'table1$var3': table2.var3,
+    'table1$var5': table2.var5,
   };
   
   t.deepEqual(await dt.concat([table, table2]), expected);
