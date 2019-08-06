@@ -9,14 +9,16 @@ const table = {
   var5: [true, true, true, false, false],
 };
 
+const varNames = ['var1', 'var2', 'var3', 'var4', 'var5'];
+
+const obs0 = ['a', 'zz', 1, 0.1, true];
+
+const pTable = Promise.resolve(table);
+
 const table2 = {
   var3: [10, 20, 30, 40, 50],
   var5: [false, false, false, true, false],
 };
-
-const varNames = ['var1', 'var2', 'var3', 'var4', 'var5'];
-
-const pTable = Promise.resolve(table);
 
 const pTable2 = Promise.resolve(table2);
 
@@ -56,4 +58,19 @@ test('pipe', async (t) => {
   t.deepEqual(await dt.pipe(table, fArray), 'a');
   t.deepEqual(await dt.pipe(pTable, fArray), 'a');
 });
+
+
+test('map', async (t) => {
+  t.deepEqual(await dt.map(table, x => x[0]), obs0);
+  t.deepEqual(await dt.map(pTable, x => x[0]), obs0);
+});
+
+
+test('map2', async (t) => {
+  const f = (a, b) => a.length + b.length;
+  
+  t.deepEqual(await dt.map2(table, table2, f), { var3: 10, var5: 10 });
+  t.deepEqual(await dt.map2(pTable, pTable2, f), { var3: 10, var5: 10 });
+});
+
 
