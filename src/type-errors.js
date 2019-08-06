@@ -19,7 +19,7 @@ const {
 // number:boundedInt<1;5> => string
 const ordinalString = n => {
   if (!Number.isInteger(n) || n < 1 || n > 5) {
-    throw new Error('Improper argument to `ordinalString` function: (number:boundedInt<1;5> => string);
+    throw new Error('Improper argument to `ordinalString` function: (number:boundedInt<1;5> => string)');
   }
 
   return [
