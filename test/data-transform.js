@@ -141,5 +141,23 @@ test('assign', async (t) => {
   t.deepEqual(await dt.assign(table, table2), Object.assign({}, table, table2));
   t.deepEqual(await dt.assign(pTable, pTable2), Object.assign({}, table, table2));
   
-  await t.throwsAsync(async () => await dt.assign(pTable, { var6: [1, 2] }));
+  await t.throwsAsync(async () => await dt.assign(table, { var6: [1, 2] }));
+});
+
+
+test('concat', async (t) => {
+  const expected = {
+    'table1$var1': table.var1,
+    'table1$var2': table.var2,
+    'table1$var3': table.var3,
+    'table1$var4': table.var4,
+    'table1$var5': table.var5,
+    'table2$var3': table2.var3,
+    'table2$var5': table2.var5,
+  };
+  
+  t.deepEqual(await dt.concat([table, table2]), expected);
+  t.deepEqual(await dt.concat([table, table2]), expected);
+  
+  await t.throwsAsync(async () => await dt.concat(table, { var6: [1, 2] }));
 });

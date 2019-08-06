@@ -190,25 +190,25 @@ const include = async (dt, test) => {
 // dataTable, dataTable => dataTable
 const assign = async (dt1, dt2) => {
   const f = (a, b) => Object.assign({}, a, b);
-  const combined = await apply2(dt1, dt2, f);
+  const result = await apply2(dt1, dt2, f);
   
-  if (!(checkSync.isDataTable(combined))) {
-    throw new Error('Assign failed because the two data tables do not have the same number of observations (i.e., arrays are not of the same length).');
+  if (!(checkSync.isDataTable(result))) {
+    throw new Error('Assign failed because the two data tables do not have the same number of observations (i.e., arrays are not all of the same length).');
   }
   
-  return combined;
+  return result;
 };
 
 
 // EXPOSED
 // array<dataTable>, [array<string>], [string] => dataTable
-const concat = async (dtArray, tableNames = [], separator = ':') => {
+const concat = async (dtArray, tableNames = [], separator = '$') => {
   const _dtArray = typeCheck(1, dtArray, types.dataTableArray);
   const _tableNames = typeCheck(2, tableNames, types.stringArray);
   const _separator = typeCheck(3, separator, types.string);
   
   const r1 = obj => (a, k, i) => {
-    const prefix = (i < _tableNames.length) ? _tableNames[i] : `table-${i}`;
+    const prefix = (i < _tableNames.length) ? _tableNames[i] : `table${i}`;
     return Object.assign({}, a, { [`${prefix}${_separator}${k}`]: obj[k] });
   };
   
@@ -217,7 +217,13 @@ const concat = async (dtArray, tableNames = [], separator = ':') => {
     return Object.assign({}, a, prefixed);
   };
   
-  return _dtArray.reduce(r2, {});
+  const result = _dtArray.reduce(r2, {});
+  
+  if (!(checkSync.isDataTable(result))) {
+    throw new Error('Concat failed because the data tables do not have the same number of observations (i.e., arrays are not all of the same length).');
+  }
+  
+  return result;
 };
 
 
