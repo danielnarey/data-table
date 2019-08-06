@@ -207,13 +207,13 @@ const concat = async (dtArray, tableNames = [], separator = '$') => {
   const _tableNames = await typeCheck(2, tableNames, types.stringArray);
   const _separator = await typeCheck(3, separator, types.string);
   
-  const r1 = obj => (a, k, i) => {
+  const r1 = (dt, i) => (a, k) => {
     const prefix = (i < _tableNames.length) ? _tableNames[i] : `table${i}`;
-    return Object.assign({}, a, { [`${prefix}${_separator}${k}`]: obj[k] });
+    return Object.assign({}, a, { [`${prefix}${_separator}${k}`]: dt[k] });
   };
   
-  const r2 = (a, k) => {
-    const prefixed = Object.keys(k).reduce(r1(k), {});
+  const r2 = (a, k, i) => {
+    const prefixed = Object.keys(k).reduce(r1(k, i), {});
     return Object.assign({}, a, prefixed);
   };
   
