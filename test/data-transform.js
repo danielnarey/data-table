@@ -44,3 +44,16 @@ test('apply2', async (t) => {
   t.deepEqual(await dt.apply2(table, table2, f, 'var3'), table2.var3);
   t.deepEqual(await dt.apply2(pTable, pTable2, f, 'var3'), table2.var3);
 });
+
+
+test('pipe', async (t) => {
+  const fArray = [
+    Object.values,
+    x => x[0],
+    x => x[0],    
+  ];
+  
+  t.deepEqual(await dt.pipe(table, fArray), 'a');
+  t.deepEqual(await dt.pipe(pTable, fArray), 'a');
+});
+
