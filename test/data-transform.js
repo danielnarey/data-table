@@ -23,8 +23,9 @@ const pReject = () => Promise.reject(new Error('Fail'));
 test('apply', async (t) => {
   t.deepEqual(await dt.apply(table, Object.keys), varNames);
   t.deepEqual(await dt.apply(pTable, Object.keys), varNames);
+  
   await t.throwsAsync(async () => await dt.apply(empty, Object.keys));
-  // t.throwsAsync(async () => await dt.apply(pEmpty, Object.keys));
-  // t.throwsAsync(async () => await dt.apply(pReject, Object.keys));
-  // t.throwsAsync(async () => await dt.apply(table, 'not a function'));
+  await t.throwsAsync(async () => await dt.apply(pEmpty, Object.keys));
+  await t.throwsAsync(async () => await dt.apply(pReject, Object.keys));
+  await t.throwsAsync(async () => await dt.apply(table, 'not a function'));
 });
