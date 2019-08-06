@@ -203,9 +203,9 @@ const assign = async (dt1, dt2) => {
 // EXPOSED
 // array<dataTable>, [array<string>], [string] => dataTable
 const concat = async (dtArray, tableNames = [], separator = '$') => {
-  const _dtArray = typeCheck(1, dtArray, types.dataTableArray);
-  const _tableNames = typeCheck(2, tableNames, types.stringArray);
-  const _separator = typeCheck(3, separator, types.string);
+  const _dtArray = await typeCheck(1, dtArray, types.dataTableArray);
+  const _tableNames = await typeCheck(2, tableNames, types.stringArray);
+  const _separator = await typeCheck(3, separator, types.string);
   
   const r1 = obj => (a, k, i) => {
     const prefix = (i < _tableNames.length) ? _tableNames[i] : `table${i}`;
