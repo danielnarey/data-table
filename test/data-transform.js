@@ -135,3 +135,11 @@ test('include', async (t) => {
   t.deepEqual(await dt.include(table, checkSync.isStringArray), { var1: table.var1, var2: table.var2 });
   t.deepEqual(await dt.include(pTable, checkSync.isStringArray), { var1: table.var1, var2: table.var2 });
 });
+
+
+test('assign', async (t) => {
+  t.deepEqual(await dt.assign(table, table2), Object.assign({}, table, table2));
+  t.deepEqual(await dt.assign(pTable, pTable2), Object.assign({}, table, table2));
+  
+  await t.throwsAsync(async () => await dt.assign(pTable, { var6: [1, 2] }));
+});

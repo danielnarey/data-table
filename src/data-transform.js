@@ -2,9 +2,10 @@ const fs = require('fs-extra');
 const got = require('got');
 const neatCsv = require('neat-csv');
 const stats = require('simple-statistics');
-const { typeCheck, types, extensions } = require('./type-errors.js');
-const { fromArray } = require('./data-import.js');
-const { toArray } = require('./data-export.js');
+const checkSync = require('./type-check-sync');
+const { typeCheck, types, extensions } = require('./type-errors');
+const { fromArray } = require('./data-import');
+const { toArray } = require('./data-export');
 
 
 //---FUNCTION APPLICATION (WITH IMPLICIT PROMISE CHAINING)---//
@@ -191,7 +192,7 @@ const assign = async (dt1, dt2) => {
   const f = (a, b) => Object.assign({}, a, b);
   const combined = await apply2(dt1, dt2, f);
   
-  if (!(await isDataTable(combined))) {
+  if (!(checkSync.isDataTable(combined))) {
     throw new Error('Assign failed because the two data tables do not have the same number of observations (i.e., arrays are not of the same length).');
   }
   
