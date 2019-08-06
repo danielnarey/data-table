@@ -126,8 +126,8 @@ test('select', async (t) => {
 
 
 test('drop', async (t) => {
-  t.deepEqual(await dt.select(table, ['var2', 'var4', 'var5']), { var1: table.var1, var3: table.var3 });
-  t.deepEqual(await dt.select(pTable, ['var2', 'var4', 'var5']), { var1: table.var1, var3: table.var3 });
+  t.deepEqual(await dt.drop(table, ['var2', 'var4', 'var5']), { var1: table.var1, var3: table.var3 });
+  t.deepEqual(await dt.drop(pTable, ['var2', 'var4', 'var5']), { var1: table.var1, var3: table.var3 });
 });
 
 
