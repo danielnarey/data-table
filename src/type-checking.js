@@ -92,6 +92,7 @@ const isDataTable = async (promise) => {
 
 
 module.exports = {
+  whatType,
   isString: isPrimitive('String'),
   isNumber: isPrimitive('Number'),
   isBoolean: isPrimitive('Boolean'),

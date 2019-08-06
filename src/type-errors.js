@@ -1,6 +1,7 @@
 //---HANDLING TYPE ERRORS---//
 
 const {
+  whatType,
   isString,
   isNumber,
   isBoolean,
@@ -37,7 +38,7 @@ const ordinalString = n => {
 // number:boundedInt<1;5>, promise, typeDef, [typeDef] => promise
 const typeCheck = async (ordinal, promise, typeDef, extended = null) => {
   if (!(await typeDef.test(promise))) {
-    throw new TypeError(`${ordinalString(ordinal)} argument: Expected ${typeDef.desc}.`);
+    throw new TypeError(`${ordinalString(ordinal)} argument: Expected ${typeDef.desc}, but got ${whatType(promise)}.`);
   }
   
   const value = await promise;
