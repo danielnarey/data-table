@@ -137,7 +137,7 @@ const extensions = {
   }),
   hasKeys: (keys) => ({
     desc: `an object with the following keys: ${keys.join(', ')}`,
-    test: obj => keys.every(k => Object.keys(obj).includes(k));
+    test: obj => keys.every(k => Object.keys(obj).includes(k)),
   }),
 };
 
