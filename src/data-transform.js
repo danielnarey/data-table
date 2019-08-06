@@ -76,10 +76,11 @@ const map2 = async (dt1, dt2, f) => {
 
 
 // EXPOSED
-// dataTable, function<*, array, string>, * => *   
+// dataTable, function<*, array, string => *>, * => *   
 const reduce = async (dt, r, initial) => {
   const _dt = await typeCheck(1, dt, types.dataTable);
   const _r = await typeCheck(2, r, types.function);
+  const _initial = await initial;
   const varNames = Object.keys(_dt);
 
   const iterator = (accumulator, i) => {
@@ -87,10 +88,10 @@ const reduce = async (dt, r, initial) => {
       return accumulator;
     }
     
-    return iterator(_r(accumulator, await _dt[varNames[i]], varNames[i]), i + 1);
+    return iterator(_r(accumulator, _dt[varNames[i]], varNames[i]), i + 1);
   }
 
-  return iterator(await initial, 0);
+  return iterator(initial, 0);
 };
 
 
@@ -134,7 +135,11 @@ const values = async (dt, varName) => {
 
 // EXPOSED
 // dataTable, string => array
-const unique = async (dt, varName) => [...new Set(values(dt, varName))];
+const unique = async (dt, varName) => {
+  const valueArray = await values(dt, varName);
+  
+  return [...new Set(valueArray)];
+};
 
 
 // EXPOSED
@@ -174,9 +179,9 @@ const drop = async (dt, varNames) => {
 const include = async (dt, test) => {
   const _dt = await typeCheck(1, dt, types.dataTable);
   const _test = await typeCheck(2, test, types.function);
-  const varNames = Object.keys(_dt);
+  const keep = Object.keys(_dt).filter(v => test(_dt[v]));
 
-  return select(_dt, varNames.filter(v => test(_dt[v])));
+  return select(_dt, keep);
 };
 
 
@@ -280,22 +285,74 @@ const splice = async (dt, varNames, splicer, newName) => {
   const _varNames = await typeCheck(2, varName, types.stringArray);
   const _splicer = await typeCheck(3, splicer, types.function);
   const _newName = await typeCheck(4, newName, types.string);
+  const keep = await drop(dt, _varNames);
   const oldVars = await select(dt, _varNames);
   const oldObs = await toArray(oldVars); 
   const newValues = oldObs.map(_splicer);
   
-  return assign(drop(dt, _varNames), { [_newName]: newValues });
+  return assign(keep, { [_newName]: newValues });
 };
 
-const spread
 
-const gather
+// dataTable, string, function => array<dataTable>
+const partition = async (dt, varName, classifier) => {
+  const _dt = await typeCheck(1, dt, types.dataTable);
+  const _varName = await typeCheck(2, varName, types.string);
+  const _classifier = await typeCheck(3, classifier, types.function);
+  const obs = await toArray(_dt);
+  const classes = [...new Set(_dt[_varName].map(_classifier))];
+  
+  const r = (a, k) => {
+    const byClass = obs.filter(x => _classifer(x[_varName]) === k);
+    
+    return [].concat(a, byClass);
+  };
+     
+  return classes.reduce(r, []).map(fromArray);      
+};
 
-const aggregate
+
+// dataTable, string, function, object => dataTable
+const aggregate = async (dt, varName, classifier, aggregators) => {
+  const _dt = await typeCheck(1, dt, types.dataTable);
+  const _varName = await typeCheck(2, varName, types.string);
+  const _classifier = await typeCheck(3, classifier, types.function);
+
+};
 
 
+// dataTable, array<string>, string, string => dataTable
+const gather = async (dt, varNames, keyName, valueName) => {
+  const _dt = await typeCheck(1, dt, types.dataTable);
+  const _varNames = await typeCheck(2, varNames, types.stringArray);
+  const _keyName = await typeCheck(3, keyName, types.string);
+  const _valueName = await typeCheck(4, valueName, types.string);
+
+  const r = (a, k) => {
+    const valueArray = _dt[k];
+    const keyArray = new Array(valueArray.length).fill(k);
+
+    return map2(a, { [_keyName]: keyArray, [_valueName]: valueArray }, Array.prototype.concat);
+  };
+  
+  return varNames.reduce(r, { [_keyName]: [], [_valueName]: [] });
+};
 
 
+// dataTable, string, string => dataTable
+const spread = async (dt, keyName, valueName) => {
+  const _keyName = await typeCheck(2, keyName, types.string);
+  const _valueName = await typeCheck(3, valueName, types.string);
+  const varNames = await unique(dt, keyName);
+
+  const r = (a, k) => {
+    const valueArray = _dt[_keyName].filter(x => x === k);
+    
+    return Object.assign({}, a, { [k]: valueArray });
+  };
+  
+  return varNames.reduce(r, {});
+};
 
 
 //---PRINTING AND EXPORTING DATA---//
@@ -314,18 +371,18 @@ module.exports = {
   unique,
   describe,
   select,
+  drop,
   include,
   assign,
   concat,
   head,
   sample,
   filter,
-  append,
   arrange,
-  classify,
+  append,
   cut,
   splice,
   aggregate,
-  spread,
   gather,
+  spread,
 };
