@@ -9,9 +9,16 @@ const table = {
   var5: [true, true, true, false, false],
 };
 
+const table2 = {
+  var3: [10, 20, 30, 40, 50],
+  var5: [false, false, false, true, false],
+};
+
 const varNames = ['var1', 'var2', 'var3', 'var4', 'var5'];
 
 const pTable = Promise.resolve(table);
+
+const pTable2 = Promise.resolve(table2);
 
 const empty = {};
 
@@ -28,4 +35,12 @@ test('apply', async (t) => {
   await t.throwsAsync(async () => await dt.apply(pEmpty, Object.keys));
   await t.throwsAsync(async () => await dt.apply(pReject, Object.keys));
   await t.throwsAsync(async () => await dt.apply(table, 'not a function'));
+});
+
+
+test('apply2', async (t) => {
+  const f = (a, b, k) => Object.assign({}, a, b)[k];
+  
+  t.deepEqual(await dt.apply(table, table2, f, 'var3'), table2.var3);
+  t.deepEqual(await dt.apply(pTable, pTable2, f, 'var3'), table2.var3);
 });
