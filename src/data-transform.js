@@ -213,11 +213,11 @@ const concat = async (dtArray, tableNames = [], separator = '$') => {
   };
   
   const r2 = (a, k) => {
-    const prefixed = Object.keys(k).reduce(r1, {});
+    const prefixed = Object.keys(k).reduce(r1(k), {});
     return Object.assign({}, a, prefixed);
   };
   
-  const result = Promise.all(_dtArray).then(arr => arr.reduce(r2, {}));
+  const result = await Promise.all(_dtArray).then(arr => arr.reduce(r2, {}));
   
   if (!(checkSync.isDataTable(result))) {
     throw new Error('Concat failed because the data tables do not have the same number of observations (i.e., arrays are not all of the same length).');
