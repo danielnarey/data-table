@@ -20,8 +20,30 @@ const table = {
   var5: [true, true, true, false, false],
 };
 
+const csvPath = './data/co2-concentration.csv';
+
+const csvUrl = 'https://raw.githubusercontent.com/vega/vega-datasets/master/data/co2-concentration.csv';
+
+const csvPreview50 = 'Date,CO2\n1958-03-01,315.7\n1958-04-01,317.46\n1958-0';
+
+const jsonPath = './data/driving.json';
+
+const jsonUrl = 'https://raw.githubusercontent.com/vega/vega-datasets/master/data/driving.json';
+
+const jsonPreview50 = '[\n  {"side": "left", "year": 1956, "miles": 3675, '; 
+
 
 test('fromArray', async (t) => {
   t.deepEqual(await fromArray(array), table);
   t.deepEqual(await fromArray(pArray), table);
+});
+
+test('previewDataFile', async (t) => {
+  t.deepEqual(await previewDataFile(csvPath, 50), csvPreview50);
+  t.deepEqual(await previewDataFile(jsonPath, 50), jsonPreview50);
+});
+
+test('previewDataUrl', async (t) => {
+  t.deepEqual(await previewDataUrl(csvUrl, 50), csvPreview50);
+  t.deepEqual(await previewDataUrl(jsonUrl, 50), jsonPreview50);
 });
