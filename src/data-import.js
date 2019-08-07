@@ -56,6 +56,8 @@ const fromArray = async (dataArray, varNames = null) => {
   
   const r1 = index => (table, varName) => {
     table[varName][index] = _dataArray[index][varName];
+    
+    return table;
   };
 
   const r2 = (a, k, i) => varNames.reduce(r1(i), a);
