@@ -389,6 +389,7 @@ module.exports = {
   append,
   cut,
   splice,
+  partition,
   aggregate,
   gather,
   spread,
