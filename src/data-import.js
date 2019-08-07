@@ -191,4 +191,6 @@ const fromRemoteJsonTable = async (url) => {
   return dt;
 };
 
-
+module.exports = {
+  fromArray,
+};
