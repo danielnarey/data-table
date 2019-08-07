@@ -1,6 +1,3 @@
-const fs = require('fs-extra');
-const got = require('got');
-const neatCsv = require('neat-csv');
 const stats = require('simple-statistics');
 const checkSync = require('./type-check-sync');
 const { typeCheck, types, extensions } = require('./type-errors');

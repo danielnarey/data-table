@@ -1,52 +1,15 @@
 //---IMPORTING DATA AND CONVERTING TO TABLE FORMAT---//
 
+const fs = require('fs-extra');
+const got = require('got');
+const neatCsv = require('neat-csv');
 const { typeCheck, types, extensions } = require('./type-errors');
 
-// Previewing data sources
 
-const previewDataFile = async (filepath, bytes = 500, encoding = 'utf8') => {
-  let content;
+//---CONVERTING A DATA ARRAY TO A DATA TABLE---//
 
-  try {
-    const fd = fs.openSync(filepath);
-    const { buffer } = await fs.read(fd, Buffer.alloc(bytes), 0, bytes);
-
-    content = buffer.toString(encoding);
-  } catch (error) {
-    console.log(error);
-  }
-
-  return content;
-};
-
-
-const previewDataUrl = (url, bytes = 500, encoding = 'utf8') => new Promise((resolve, reject) => {
-  let content = '';
-  let downloaded = 0;
-
-  try {
-    const stream = got(url, {
-      resolveBodyOnly: true,
-      responseType: 'buffer',
-      stream: true,
-    });
-
-    stream.on('data', (chunk) => {
-      content += chunk.toString(encoding, 0, bytes - downloaded);
-      downloaded += chunk.length;
-      if (downloaded >= bytes) {
-        stream.destroy();
-        resolve(content);
-      }
-    }).on('error', (error) => {
-      reject(error);
-    });
-  } catch (error) {
-    reject(error);
-  }
-});
-
-
+// EXPOSED: MODULE, PACKAGE
+// array<object>, [array<string>] => dataTable  
 const fromArray = async (dataArray, varNames = null) => {
   const _dataArray = await typeCheck(1, dataArray, types.array);
   
@@ -69,125 +32,109 @@ const fromArray = async (dataArray, varNames = null) => {
 };
 
 
-const fromCsv = async (filepath) => {
-  let dt;
+//---PREVIEWING A DATA SOURCE AS TEXT---//
 
-  try {
-    const csvString = await fs.readFile(filepath);
-    const jsArray = await neatCsv(csvString);
+// EXPOSED: MODULE, PACKAGE
+// string:path, [number:int], [string] => string
+const previewDataFile = async (filepath, bytes = 500, encoding = 'utf8') => {
+  const _filepath = await typeCheck(1, filepath, types.string);
+  const _bytes = await typeCheck(2, bytes, types.number, extensions.leftBoundedInt(1));
+  const _encoding = await typeCheck(3, encoding, types.string);
+  
+  const fd = fs.openSync(_filepath);
+  const { buffer } = await fs.read(fd, Buffer.alloc(_bytes), 0, _bytes);
 
-    dt = await fromArray(jsArray);
-    const validated = await isDataTable(dt);
-
-    if (!validated) {
-      throw new TypeError('File content cannot be converted to a data table.');
-    }
-  } catch (error) {
-    console.log(error);
-  }
-
-  return dt;
+  return buffer.toString(_encoding);
 };
 
 
-const fromJsonArray = async (filepath) => {
-  let dt;
+// EXPOSED: MODULE, PACKAGE
+// string:url, [number:int], [string] => string
+const previewDataUrl = async (url, bytes = 500, encoding = 'utf8') => {
+  const _url = await typeCheck(1, url, types.string);
+  const _bytes = await typeCheck(2, bytes, types.number, extensions.leftBoundedInt(1));
+  const _encoding = await typeCheck(3, encoding, types.string);
 
-  try {
-    const jsArray = await fs.readJson(filepath);
-
-    dt = await fromArray(jsArray);
-    const validated = await isDataTable(dt);
-
-    if (!validated) {
-      throw new TypeError('File content cannot be converted to a data table.');
+  return new Promise((resolve, reject) => {
+    try {
+      const stream = got(_url, {
+        resolveBodyOnly: true,
+        responseType: 'buffer',
+        stream: true,
+      });
+      
+      let content = '';
+      let downloaded = 0;
+      
+      stream.on('data', (chunk) => {
+        content += chunk.toString(_encoding, 0, _bytes - downloaded);
+        downloaded += chunk.length;
+        if (downloaded >= _bytes) {
+          stream.destroy();
+          resolve(content);
+        }
+      }).on('error', (error) => {
+        reject(error);
+      });
+    } catch (error) {
+      reject(error);
     }
-  } catch (error) {
-    console.log(error);
-  }
-
-  return dt;
+  });
 };
 
 
-const fromJsonTable = async (filepath) => {
-  let dt;
+//---IMPORTING DATA FROM CSV---//
 
-  try {
-    dt = await fs.readJson(filepath);
-    const validated = await isDataTable(dt);
+// EXPOSED: MODULE, PACKAGE
+// string:path, [array<string>] => dataTable
+const fromCsvFile = async (filepath, varNames = null) => {
+  const _filepath = await typeCheck(1, filepath, types.string);
+  const csvString = await fs.readFile(_filepath);
+  const dataArray = await neatCsv(csvString);
 
-    if (!validated) {
-      throw new TypeError('File content is not a valid data table.');
-    }
-  } catch (error) {
-    console.log(error);
-  }
-
-  return dt;
+  return fromArray(dataArray, varNames);
 };
 
 
-const fromRemoteCsv = async (url) => {
-  let dt;
+// EXPOSED: MODULE, PACKAGE
+// string:path, [array<string>] => dataTable
+const fromJsonFile = async (filepath, varNames = null) => {
+  const _filepath = await typeCheck(1, filepath, types.string);
+  const dataArray = await fs.readJson(_filepath);
 
-  try {
-    const { body } = await got(url);
-    const jsArray = await neatCsv(body);
-
-    dt = await fromArray(jsArray);
-    const validated = await isDataTable(dt);
-
-    if (!validated) {
-      throw new TypeError('Response body cannot be converted to a data table.');
-    }
-  } catch (error) {
-    console.log(error);
-  }
-
-  return dt;
+  return fromArray(dataArray);
 };
 
 
-const fromRemoteJsonArray = async (url) => {
-  let dt;
+// EXPOSED: MODULE, PACKAGE
+// string:path, [array<string>] => dataTable
+const fromCsvUrl = async (url, varNames = null) => {
+  const _url = await typeCheck(1, url, types.string);
+  const { body } = await got(url);
+  const dataArray = await neatCsv(body);
 
-  try {
-    const { body } = await got(url, { json: true });
-
-    dt = await fromArray(body);
-    const validated = await isDataTable(dt);
-
-    if (!validated) {
-      throw new TypeError('Response body cannot be converted to a data table.');
-    }
-  } catch (error) {
-    console.log(error);
-  }
-
-  return dt;
+  return fromArray(dataArray);
 };
 
 
-const fromRemoteJsonTable = async (url) => {
-  let dt;
+//---IMPORTING DATA FROM JSON---//
 
-  try {
-    const { body } = await got(url, { json: true });
-    const validated = await isDataTable(body);
+// EXPOSED: MODULE, PACKAGE
+// string:path, [array<string>] => dataTable
+const fromJsonUrl = async (url, varNames = null) => {
+  const _url = await typeCheck(1, url, types.string);
+  const { body } = await got(url, { json: true });
 
-    if (!validated) {
-      throw new TypeError('Response body is not a valid data table.');
-    }
-
-    dt = body;
-  } catch (error) {
-    console.log(error);
-  }
-
-  return dt;
+  return fromArray(body);
 };
+
 
 module.exports = {
   fromArray,
+  previewDataFile,
+  previewDataUrl,
+  fromCsvFile,
+  fromCsvUrl,
+  fromJsonFile,
+  fromJsonUrl,
 };
