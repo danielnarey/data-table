@@ -232,7 +232,7 @@ const concat = async (dtArray, tableNames = [], separator = '$') => {
 // EXPOSED
 // dataTable, number:leftBoundedInt(1) => dataTable
 const head = async (dt, n = 5) => {
-  const _n = typeCheck(2, n, types.number, extensions.leftBoundedInt(1));
+  const _n = await typeCheck(2, n, types.number, extensions.leftBoundedInt(1));
 
   return map(dt, x => x.slice(0, _n));
 };
