@@ -1,5 +1,4 @@
 import test from 'ava';
-import dt from '../src/data-transform';
 import { fromArray } from '../src/data-import';
 
 

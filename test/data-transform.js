@@ -202,7 +202,7 @@ test('sample', async (t) => {
 test('filter', async (t) => {
   const expected = {
     var1: ['a', 'b', 'c'],
-    var2: ['zz', 'yy', 'zz'],
+    var2: ['zz', 'yy', 'xx'],
     var3: [1, 2, 3],
     var4: [0.1, 0.1, 0.2],
     var5: [true, true, true],
