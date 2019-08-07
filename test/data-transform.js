@@ -194,8 +194,8 @@ test('sample', async (t) => {
   const sampled1 = await dt.sample(table, 2);
   const sampled2 = await dt.sample(pTable, Promise.resolve(2));
   
-  t.deepEqual(await size(sampled1), { variables: 5, observations: 2 });
-  t.deepEqual(await size(sampled2), { variables: 5, observations: 2 });
+  t.deepEqual(await dt.size(sampled1), { variables: 5, observations: 2 });
+  t.deepEqual(await dt.size(sampled2), { variables: 5, observations: 2 });
 });
 
 
