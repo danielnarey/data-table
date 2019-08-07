@@ -48,7 +48,7 @@ const previewDataUrl = (url, bytes = 500, encoding = 'utf8') => new Promise((res
 
 
 const fromArray = async (dataArray, varNames = null) => {
-  const _dataArray = await typeCheck(1, array, types.array);
+  const _dataArray = await typeCheck(1, dataArray, types.array);
   
   if (!varNames) {
     varNames = Object.keys(_dataArray[0]);
