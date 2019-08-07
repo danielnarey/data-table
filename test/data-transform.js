@@ -186,7 +186,7 @@ test('head', async (t) => {
   };
 
   t.deepEqual(await dt.head(table, 2), expected);
-  t.deepEqual(await dt.head(pTable, 2), expected);
+  t.deepEqual(await dt.head(pTable, Promise.resolve(2)), expected);
 });
 
 
