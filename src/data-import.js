@@ -1,5 +1,6 @@
 //---IMPORTING DATA AND CONVERTING TO TABLE FORMAT---//
 
+const { typeCheck, types, extensions } = require('./type-errors');
 
 // Previewing data sources
 
