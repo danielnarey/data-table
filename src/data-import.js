@@ -46,30 +46,24 @@ const previewDataUrl = (url, bytes = 500, encoding = 'utf8') => new Promise((res
 });
 
 
-const fromArray = jsArray => new Promise((resolve, reject) => {
-  if (whatType(jsArray) !== 'Array') {
-    reject(new TypeError(`Expected an Array but got a ${whatType(jsArray)}`));
+const fromArray = async (dataArray, varNames = null) => {
+  const _dataArray = await typeCheck(1, array, types.array);
+  
+  if (!varNames) {
+    varNames = Object.keys(_dataArray[0]);
   }
-
-  const keys = Object.keys(jsArray[0]);
-
-  const reducer = (a, c, i) => {
-    const obj = a;
-
-    keys.forEach((k) => {
-      obj[k][i] = c[k];
-    });
-
-    return obj;
+  
+  const r1 = i => (a, k) => {
+    a[k][i] = _dataArray[i][k];
   };
 
+  const r2 = (a, i) => varNames.reduce(r1(i), a);
+  
   const initial = {};
-  keys.forEach((k) => {
-    initial[k] = [];
-  });
-
-  resolve(jsArray.reduce(reducer, initial));
-});
+  varNames.forEach(v => initial[v] = []);
+  
+  return _dataArray.keys().reduce(r2, initial);
+};
 
 
 const fromCsv = async (filepath) => {
