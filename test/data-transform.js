@@ -184,7 +184,7 @@ test('head', async (t) => {
     var4: [0.1, 0.1],
     var5: [true, true],
   };
-  
+  console.log(await dt.head(table, 2));
   t.deepEqual(await dt.head(table, 2), expected);
   t.deepEqual(await dt.head(pTable, 2), expected);
 });
