@@ -54,16 +54,16 @@ const fromArray = async (dataArray, varNames = null) => {
     varNames = Object.keys(_dataArray[0]);
   }
   
-  const r1 = i => (a, k) => {
-    a[k][i] = _dataArray[i][k];
+  const r1 = index => (table, varName) => {
+    table[varName][index] = _dataArray[index][varName];
   };
 
-  const r2 = (a, i) => varNames.reduce(r1(i), a);
+  const r2 = (a, k, i) => varNames.reduce(r1(i), a);
   
   const initial = {};
   varNames.forEach(v => initial[v] = []);
   
-  return _dataArray.keys().reduce(r2, initial);
+  return _dataArray.reduce(r2, initial);
 };
 
 
