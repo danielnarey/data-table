@@ -25,4 +25,4 @@ const table = {
 test('fromArray', async (t) => {
   t.deepEqual(await fromArray(array), table);
   t.deepEqual(await fromArray(pArray), table);
-};
+});
