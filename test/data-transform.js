@@ -174,3 +174,40 @@ test('concat', async (t) => {
   
   await t.throwsAsync(async () => await dt.concat(table, { var6: [1, 2] }));
 });
+
+
+test('head', async (t) => {
+  const expected = {
+    var1: ['a', 'b'],
+    var2: ['zz', 'yy'],
+    var3: [1, 2],
+    var4: [0.1, 0.1],
+    var5: [true, true],
+  };
+  
+  t.deepEqual(await dt.head(table, 2), expected);
+  t.deepEqual(await dt.head(pTable, 2), expected);
+});
+
+
+test('sample', async (t) => {
+  const sampled1 = await dt.sample(table, 2);
+  const sampled2 = await dt.sample(pTable, Promise.resolve(2));
+  
+  t.deepEqual(await size(sampled1), { variables: 5, observations: 2 });
+  t.deepEqual(await size(sampled2), { variables: 5, observations: 2 });
+});
+
+
+test('filter', async (t) => {
+  const expected = {
+    var1: ['a', 'b', 'c'],
+    var2: ['zz', 'yy', 'zz'],
+    var3: [1, 2, 3],
+    var4: [0.1, 0.1, 0.2],
+    var5: [true, true, true],
+  };
+  
+  t.deepEqual(await dt.filter(table, x => x.var5), expected);
+  t.deepEqual(await dt.filter(pTable, x => x.var5), expected);
+});
