@@ -7,10 +7,12 @@ const { toArray } = require('./data-export');
 
 //---FUNCTION APPLICATION (WITH IMPLICIT PROMISE CHAINING)---//
 
+const copy = (obj) => Object.assign({}, obj);
+
 // EXPOSED 
 // dataTable, function<dataTable, [**] => *>, [**] => * 
 const apply = async (dt, f, ...args) => {
-  const _dt = await typeCheck(1, dt, types.dataTable);
+  const _dt = copy(await typeCheck(1, dt, types.dataTable));
   const _f = await typeCheck(2, f, types.function);
   
   return _f(...[].concat(_dt, args));
@@ -20,8 +22,8 @@ const apply = async (dt, f, ...args) => {
 // EXPOSED 
 // dataTable, dataTable, function<dataTable, dataTable, [**] => *>, [**] => *
 const apply2 = async (dt1, dt2, f, ...args) => {
-  const _dt1 = await typeCheck(1, dt1, types.dataTable);
-  const _dt2 = await typeCheck(2, dt2, types.dataTable);
+  const _dt1 = copy(await typeCheck(1, dt1, types.dataTable));
+  const _dt2 = copy(await typeCheck(2, dt2, types.dataTable));
   const _f = await typeCheck(3, f, types.function);
   
   return _f(...[].concat(_dt1, _dt2, args));
@@ -33,7 +35,7 @@ const apply2 = async (dt1, dt2, f, ...args) => {
 // EXPOSED
 // dataTable, array<function> => *
 const pipe = async (dt, fArray) => {
-  const _dt = await typeCheck(1, dt, types.dataTable);
+  const _dt = copy(await typeCheck(1, dt, types.dataTable));
   const _fArray = await typeCheck(2, fArray, types.functionArray);
 
   const iterator = (lastResult, i) => {
