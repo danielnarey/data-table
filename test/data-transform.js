@@ -74,10 +74,11 @@ test('map', async (t) => {
 
 
 test('map2', async (t) => {
-  const f = (a, b) => a.length + b.length;
+  const f = (a, b) => a.map((x, i) => x + b[i]);
+  const expected = Object.assign({}, table, { var3: [11, 22, 33, 44, 55] });
   
-  t.deepEqual(await dt.map2(table, table2, f), { var3: 10, var5: 10 });
-  t.deepEqual(await dt.map2(pTable, pTable2, f), { var3: 10, var5: 10 });
+  t.deepEqual(await dt.map2(table, table2, f, ['var3']), expected);
+  t.deepEqual(await dt.map2(pTable, pTable2, f, ['var3']), expected);
 });
 
 
