@@ -64,7 +64,7 @@ toBoolean = (value, test = Boolean, missingValues = { Undefined: false, Null: fa
 
 // EXPOSED: MODULE, PACKAGE
 // *, [function<* => date], [object:{ Undefined$date, Null$date, ... }] => date
-toDate = (value, parser = x => new Date(x), missingValues = { Undefined: new Date(NaN), Null: new Date(NaN) } => {
+toDate = (value, parser = x => new Date(x), missingValues = { Undefined: new Date(NaN), Null: new Date(NaN) }) => {
   const valueType = whatType(value);
   
   if (Object.keys(missingValues).includes(valueType)) {
