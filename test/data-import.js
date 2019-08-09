@@ -1,3 +1,4 @@
+import path from 'path';
 import test from 'ava';
 import dt from '../src/data-import';
 
@@ -20,13 +21,13 @@ const table = {
   var5: [true, true, true, false, false],
 };
 
-const csvPath = './data/co2-concentration.csv';
+const csvPath = path(__dirname, './data/co2-concentration.csv');
 
 const csvUrl = 'https://raw.githubusercontent.com/vega/vega-datasets/master/data/co2-concentration.csv';
 
 const csvPreview50 = 'Date,CO2\n1958-03-01,315.7\n1958-04-01,317.46\n1958-0';
 
-const jsonPath = './data/driving.json';
+const jsonPath = path(__dirname, './data/driving.json');
 
 const jsonUrl = 'https://raw.githubusercontent.com/vega/vega-datasets/master/data/driving.json';
 
