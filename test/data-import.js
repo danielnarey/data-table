@@ -1,5 +1,5 @@
 import test from 'ava';
-import { fromArray } from '../src/data-import';
+import dt from '../src/data-import';
 
 
 const array = [
@@ -34,16 +34,16 @@ const jsonPreview50 = '[\n  {"side": "left", "year": 1956, "miles": 3675, ';
 
 
 test('fromArray', async (t) => {
-  t.deepEqual(await fromArray(array), table);
-  t.deepEqual(await fromArray(pArray), table);
+  t.deepEqual(await dt.fromArray(array), table);
+  t.deepEqual(await dt.fromArray(pArray), table);
 });
 
 test('previewDataFile', async (t) => {
-  t.deepEqual(await previewDataFile(csvPath, 50), csvPreview50);
-  t.deepEqual(await previewDataFile(jsonPath, 50), jsonPreview50);
+  t.deepEqual(await dt.previewDataFile(csvPath, 50), csvPreview50);
+  t.deepEqual(await dt.previewDataFile(jsonPath, 50), jsonPreview50);
 });
 
 test('previewDataUrl', async (t) => {
-  t.deepEqual(await previewDataUrl(csvUrl, 50), csvPreview50);
-  t.deepEqual(await previewDataUrl(jsonUrl, 50), jsonPreview50);
+  t.deepEqual(await dt.previewDataUrl(csvUrl, 50), csvPreview50);
+  t.deepEqual(await dt.previewDataUrl(jsonUrl, 50), jsonPreview50);
 });
