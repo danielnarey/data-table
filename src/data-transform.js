@@ -396,6 +396,7 @@ module.exports = {
   values,
   unique,
   describe,
+  rename,
   select,
   drop,
   include,
