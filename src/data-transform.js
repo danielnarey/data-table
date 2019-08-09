@@ -160,7 +160,7 @@ const describe = async (dt) => {
 // dataTable, object => dataTable
 const rename = async (dt, mapping) => {
   const _dt = copy(await typeCheck(1, dt, types.dataTable));
-  const _mapping = await typeCheck(2, varNames, types.object);
+  const _mapping = await typeCheck(2, mapping, types.object);
   
   const r = (a, k) => Object.assign({}, a, { [_mapping[k]]: _dt[k] });
   
