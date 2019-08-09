@@ -55,6 +55,7 @@ const pipe = async (dt, fArray) => {
 const map = async (dt, f, varNames = null) => {
   const _dt = copy(await typeCheck(1, dt, types.dataTable));
   const _f = await typeCheck(2, f, types.function);
+  
   const _varNames = (!varNames) ? Object.keys(_dt) : await typeCheck(3, varNames, types.stringArray);
   
   const r = (a, k) => Object.assign({}, a, { [k]: _f(_dt[k]) });
@@ -84,6 +85,7 @@ const reduce = async (dt, r, initial, varNames = null) => {
   const _dt = copy(await typeCheck(1, dt, types.dataTable));
   const _r = await typeCheck(2, r, types.function);
   const _initial = await initial;
+  
   const _varNames = (!varNames) ? Object.keys(_dt) : await typeCheck(4, varNames, types.stringArray);
 
   const iterator = (accumulator, i) => {
@@ -152,13 +154,25 @@ const describe = async (dt) => {
 };
 
 
-//---SUBSETTING AND COMBINING VARIABLE SETS---//
+//---RENAMING, SUBSETTING, AND COMBINING VARIABLE SETS---//
+
+// EXPOSED
+// dataTable, object => dataTable
+const rename = async (dt, mapping) => {
+  const _dt = copy(await typeCheck(1, dt, types.dataTable));
+  const _mapping = await typeCheck(2, varNames, types.object);
+  
+  const r = (a, k) => Object.assign({}, a, { [_mapping[k]]: _dt[k] });
+  
+  return Object.assign({}, _dt, Object.keys(_mapping).reduce(r, {}));
+}
 
 // EXPOSED
 // dataTable, array<string> => dataTable
 const select = async (dt, varNames) => {
   const _dt = copy(await typeCheck(1, dt, types.dataTable));
   const _varNames = await typeCheck(2, varNames, types.stringArray);
+  
   const r = (a, k) => Object.assign({}, a, { [k]: _dt[k] });
   
   return _varNames.reduce(r, {});
@@ -171,6 +185,7 @@ const drop = async (dt, varNames) => {
   const _dt = copy(await typeCheck(1, dt, types.dataTable));
   const _varNames = await typeCheck(2, varNames, types.stringArray);
   const keep = Object.keys(_dt).filter(v => !_varNames.includes(v));
+  
   const r = (a, k) => Object.assign({}, a, { [k]: _dt[k] });
   
   return keep.reduce(r, {});
@@ -182,6 +197,7 @@ const drop = async (dt, varNames) => {
 const include = async (dt, test) => {
   const _dt = copy(await typeCheck(1, dt, types.dataTable));
   const _test = await typeCheck(2, test, types.function);
+
   const keep = Object.keys(_dt).filter(v => _test(_dt[v]));
 
   return select(_dt, keep);
