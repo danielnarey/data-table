@@ -51,44 +51,47 @@ const pipe = async (dt, fArray) => {
 
 
 // EXPOSED 
-// dataTable, function<array => *> => object
-const map = async (dt, f) => {
+// dataTable, function<array => *>, [array<string>] => object
+const map = async (dt, f, varNames = null) => {
   const _dt = copy(await typeCheck(1, dt, types.dataTable));
   const _f = await typeCheck(2, f, types.function);
+  const _varNames = (!varNames) ? Object.keys(_dt) : await typeCheck(3, varNames, types.stringArray);
+  
   const r = (a, k) => Object.assign({}, a, { [k]: _f(_dt[k]) });
 
-  return Object.keys(_dt).reduce(r, {});
+  return Object.assign({}, _dt, _varNames.reduce(r, {}));
 };
 
 
 // EXPOSED 
-// dataTable, function<array => *> => object
-const map2 = async (dt1, dt2, f) => {
+// dataTable, function<array => *>, [array<string>] => object
+const map2 = async (dt1, dt2, f, varNames = null) => {
   const _dt1 = copy(await typeCheck(1, dt1, types.dataTable));
   const _dt2 = copy(await typeCheck(2, dt2, types.dataTable));
   const _f = await typeCheck(3, f, types.function);
-  const varNames = Object.keys(_dt1).filter(x => Object.keys(_dt2).includes(x));
+  
+  const _varNames = (!varNames) ? Object.keys(_dt1).filter(x => Object.keys(_dt2).includes(x)) : await typeCheck(4, varNames, types.stringArray);
 
   const r = (a, k) => Object.assign({}, a, { [k]: _f(_dt1[k], _dt2[k]) });
 
-  return varNames.reduce(r, {});
+  return Object.assign({}, _dt1, _varNames.reduce(r, {}));
 };
 
 
 // EXPOSED
-// dataTable, function<*, array, string => *>, * => *   
-const reduce = async (dt, r, initial) => {
+// dataTable, function<*, array, string => *>, *, [array<string>] => *   
+const reduce = async (dt, r, initial, varNames = null) => {
   const _dt = copy(await typeCheck(1, dt, types.dataTable));
   const _r = await typeCheck(2, r, types.function);
   const _initial = await initial;
-  const varNames = Object.keys(_dt);
+  const _varNames = (!varNames) ? Object.keys(_dt) : await typeCheck(4, varNames, types.stringArray);
 
   const iterator = (accumulator, i) => {
-    if (i >= varNames.length) {
+    if (i >= _varNames.length) {
       return accumulator;
     }
     
-    return iterator(_r(accumulator, _dt[varNames[i]], varNames[i]), i + 1);
+    return iterator(_r(accumulator, _dt[_varNames[i]], _varNames[i]), i + 1);
   }
 
   return iterator(initial, 0);
