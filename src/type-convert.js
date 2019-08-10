@@ -12,7 +12,7 @@ const toString = (value, mapping = [], missingValues = { Undefined: '', Null: ''
     return missingValues[valueType];  
   }
   
-  const mapIndex = mapping.findIndex(x => x.key === value);
+  const mapIndex = Array.prototype.findIndex.call(mapping, x => x.key === value);
   
   if (mapIndex >= 0) {
     return mapping[mapIndex].value;
@@ -35,7 +35,7 @@ const toNumber = (value, mapping = [], missingValues = { Undefined: false, Null:
     return missingValues[valueType];  
   }
   
-  const mapIndex = mapping.findIndex(x => x.key === value);
+  const mapIndex = Array.prototype.findIndex.call(mapping, x => x.key === value);
   
   if (mapIndex >= 0) {
     return mapping[mapIndex].value;
@@ -47,7 +47,7 @@ const toNumber = (value, mapping = [], missingValues = { Undefined: false, Null:
 
 // EXPOSED: MODULE, PACKAGE
 // *, [function<* => boolean], [object:{ Undefined$boolean, Null$boolean, ... }] => boolean
-toBoolean = (value, test = Boolean, missingValues = { Undefined: false, Null: false }) => {
+const toBoolean = (value, test = Boolean, missingValues = { Undefined: false, Null: false }) => {
   const valueType = whatType(value);
   
   if (Object.keys(missingValues).includes(valueType)) {
@@ -64,7 +64,7 @@ toBoolean = (value, test = Boolean, missingValues = { Undefined: false, Null: fa
 
 // EXPOSED: MODULE, PACKAGE
 // *, [function<* => date], [object:{ Undefined$date, Null$date, ... }] => date
-toDate = (value, parser = x => new Date(x), missingValues = { Undefined: new Date(NaN), Null: new Date(NaN) }) => {
+const toDate = (value, parser = x => new Date(x), missingValues = { Undefined: new Date(NaN), Null: new Date(NaN) }) => {
   const valueType = whatType(value);
   
   if (Object.keys(missingValues).includes(valueType)) {
@@ -80,7 +80,7 @@ toDate = (value, parser = x => new Date(x), missingValues = { Undefined: new Dat
 
 
 // INTERNAL
-//
+// function => array, [**] => array
 const toTypedArray = f => (arr, ...args) => arr.map(v => f(...[].concat(v, args)));
 
 
