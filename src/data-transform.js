@@ -157,17 +157,6 @@ const describe = async (dt) => {
 //---RENAMING, SUBSETTING, AND COMBINING VARIABLE SETS---//
 
 // EXPOSED
-// dataTable, object => dataTable
-const rename = async (dt, mapping) => {
-  const _dt = copy(await typeCheck(1, dt, types.dataTable));
-  const _mapping = await typeCheck(2, mapping, types.object);
-  
-  const r = (a, k) => Object.assign({}, a, { [_mapping[k]]: _dt[k] });
-  
-  return Object.assign({}, _dt, Object.keys(_mapping).reduce(r, {}));
-}
-
-// EXPOSED
 // dataTable, array<string> => dataTable
 const select = async (dt, varNames) => {
   const _dt = copy(await typeCheck(1, dt, types.dataTable));
@@ -202,6 +191,21 @@ const include = async (dt, test) => {
 
   return select(_dt, keep);
 };
+
+
+// EXPOSED
+// dataTable, object => dataTable
+const rename = async (dt, mapping) => {
+  const _dt = copy(await typeCheck(1, dt, types.dataTable));
+  const _mapping = await typeCheck(2, mapping, types.object);
+  
+  const r = (a, k) => Object.assign({}, a, { [_mapping[k]]: _dt[k] });
+  
+  const oldNames = Object.keys(_mapping);
+  const remaining = drop(_dt, oldNames);
+  
+  return Object.assign({}, remaining, oldNames.reduce(r, {}));
+}
 
 
 // EXPOSED
