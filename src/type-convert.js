@@ -79,9 +79,18 @@ toDate = (value, parser = x => new Date(x), missingValues = { Undefined: new Dat
 };
 
 
+// INTERNAL
+//
+const toTypedArray = f => (arr, ...args) => arr.map(v => f(...[].concat(v, args)));
+
+
 module.exports = {
   toString,
   toNumber,
   toBoolean,
   toDate,
+  toStringArray: toTypedArray(toString),
+  toNumberArray: toTypedArray(toNumber),
+  toBooleanArray: toTypedArray(toBoolean),
+  toDateArray: toTypedArray(toDate),
 };
