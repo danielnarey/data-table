@@ -7,7 +7,7 @@ const { toArray } = require('./data-export');
 
 //---FUNCTION APPLICATION (WITH IMPLICIT PROMISE CHAINING)---//
 
-const copy = obj => Object.assign({}, obj);
+const copy = obj => ({ ...obj });
 
 // EXPOSED 
 // dataTable, function<dataTable, [**] => *>, [**] => * 
