@@ -19,6 +19,7 @@
     "node": ">=8"
   },
   "dependencies": {
+    "@danielnarey/data-types": "^0.1.0",
     "fs-extra": "^8.1.0",
     "got": "^9.6.0",
     "neat-csv": "^5.1.0",
