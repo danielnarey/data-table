@@ -44,19 +44,16 @@ const isTypedArray = type => array => {
 // EXPOSED: MODULE, PACKAGE
 // [*] => boolean
 const isDataTable = dt => {
-  if (whatType(dt) !== 'Object') {
+  if (whatType(dt) !== 'Map') {
     return false;
   }
 
-  const keys = Object.keys(dt);
-
-  if (keys.length === 0) {
+  if (dt.size === 0) {
     return false;
   }
 
-  const valueTypes = keys.map(k => whatType(dt[k]));
 
-  if (!valueTypes.every(x => (x === 'Array'))) {
+  if (![...dt.values()].every(x => isPrimitive('Array')(x) || isTypedArray()(x))) {
     return false;
   }
 
