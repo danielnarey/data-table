@@ -7,8 +7,8 @@ const checkAsync = require('./type-check-async');
 // INTERNAL
 // number:boundedInt<1;5> => string
 const ordinalString = n => {
-  if (!Number.isInteger(n) || n < 1 || n > 5) {
-    throw new Error('Improper argument to `ordinalString` function: (number:boundedInt<1;5> => string)');
+  if (!Number.isInteger(n) || n < 1 || n > 7) {
+    throw new Error('Improper argument to `ordinalString` function: (number:boundedInt<1;7> => string)');
   }
 
   return [
@@ -17,6 +17,8 @@ const ordinalString = n => {
     'Third',
     'Fourth',
     'Fifth',
+    'Sixth',
+    'Seventh',
   ][n - 1];
 };
   
@@ -24,9 +26,9 @@ const ordinalString = n => {
 // EXPOSED: MODULE
 // DEFINE typeDef $= object:{ desc$string, test$function<[*] => boolean> }
 // number:boundedInt<1;5>, promise, typeDef, [typeDef] => promise
-const typeCheck = async (ordinal, promise, typeDef, extended = null) => {
-  if (!(await typeDef.test(promise))) {
-    throw new TypeError(`${ordinalString(ordinal)} argument: Expected ${typeDef.desc}, but got ${whatType(promise)}.`);
+const typeCheck = async (ordinal, promise, { desc, test }, extended = null) => {
+  if (!(await test(promise))) {
+    throw new TypeError(`${ordinalString(ordinal)} argument: Expected ${desc}, but got ${whatType(promise)}.`);
   }
   
   const value = await promise;

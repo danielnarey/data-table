@@ -5,38 +5,36 @@ const { fromArray } = require('./data-import');
 const { toArray } = require('./data-export');
 
 
-//---FUNCTION APPLICATION (WITH IMPLICIT PROMISE CHAINING)---//
-
-const copy = obj => ({ ...obj });
+//---Function APPLICATION (WITH IMPLICIT PROMISE CHAINING)---//
 
 // EXPOSED 
-// dataTable, function<dataTable, [**] => *>, [**] => * 
+// DataTable, Function<DataTable, [**] => *>, [**] => * 
 const apply = async (dt, f, ...args) => {
-  const _dt = copy(await typeCheck(1, dt, types.dataTable));
-  const _f = await typeCheck(2, f, types.function);
+  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _f = await typeCheck(2, f, types.Function);
   
-  return _f(...[].concat(_dt, args));
+  return _f(...[].concat(new Map(_dt), args));
 };
 
 
 // EXPOSED 
-// dataTable, dataTable, function<dataTable, dataTable, [**] => *>, [**] => *
+// DataTable, DataTable, Function<DataTable, DataTable, [**] => *>, [**] => *
 const apply2 = async (dt1, dt2, f, ...args) => {
-  const _dt1 = copy(await typeCheck(1, dt1, types.dataTable));
-  const _dt2 = copy(await typeCheck(2, dt2, types.dataTable));
-  const _f = await typeCheck(3, f, types.function);
+  const _dt1 = await typeCheck(1, dt1, types.DataTable);
+  const _dt2 = await typeCheck(2, dt2, types.DataTable);
+  const _f = await typeCheck(3, f, types.Function);
   
-  return _f(...[].concat(_dt1, _dt2, args));
+  return _f(...[].concat(new Map(_dt1), new Map(_dt2), args));
 };
 
 
 //---HIGHER ORDER FUNCTIONS---//
 
 // EXPOSED
-// dataTable, array<function> => *
+// DataTable, array<Function> => *
 const pipe = async (dt, fArray) => {
-  const _dt = copy(await typeCheck(1, dt, types.dataTable));
-  const _fArray = await typeCheck(2, fArray, types.functionArray);
+  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _fArray = await typeCheck(2, fArray, types.FunctionArray);
 
   const iterator = (lastResult, i) => {
     if (i >= _fArray.length) {
@@ -46,54 +44,58 @@ const pipe = async (dt, fArray) => {
     return iterator(_fArray[i](lastResult), i + 1);
   }
 
-  return iterator(_dt, 0);
+  return iterator(new Map(_dt), 0);
 };
 
 
 // EXPOSED 
-// dataTable, function<array => *>, [array<string>] => object
+// DataTable, Function<array => *>, [array<string>] => object
 const map = async (dt, f, varNames = null) => {
-  const _dt = copy(await typeCheck(1, dt, types.dataTable));
-  const _f = await typeCheck(2, f, types.function);
+  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _f = await typeCheck(2, f, types.Function);
   
-  const _varNames = (!varNames) ? Object.keys(_dt) : await typeCheck(3, varNames, types.stringArray);
-  
-  const r = (a, k) => Object.assign({}, a, { [k]: _f(_dt[k]) });
+  const _varNames = (!varNames) ? [..._dt.keys()] : await typeCheck(3, varNames, types.StringArray);
 
-  return Object.assign({}, _dt, _varNames.reduce(r, {}));
+  return reduce(
+    _varNames,
+    (a, k) => a.set(k, _f(a.get(k))),
+    new Map(_dt),
+  );
 };
 
 
 // EXPOSED 
-// dataTable, function<array => *>, [array<string>] => object
+// DataTable, Function<array => *>, [array<string>] => object
 const map2 = async (dt1, dt2, f, varNames = null) => {
-  const _dt1 = copy(await typeCheck(1, dt1, types.dataTable));
-  const _dt2 = copy(await typeCheck(2, dt2, types.dataTable));
-  const _f = await typeCheck(3, f, types.function);
+  const _dt1 = await typeCheck(1, dt1, types.DataTable);
+  const _dt2 = await typeCheck(2, dt2, types.DataTable);
+  const _f = await typeCheck(3, f, types.Function);
   
-  const _varNames = (!varNames) ? Object.keys(_dt1).filter(x => Object.keys(_dt2).includes(x)) : await typeCheck(4, varNames, types.stringArray);
+  const _varNames = (!varNames) ? filter([..._dt1.keys()], x => includes([..._dt2.keys()], x)) : await typeCheck(4, varNames, types.StringArray);
 
-  const r = (a, k) => Object.assign({}, a, { [k]: _f(_dt1[k], _dt2[k]) });
-
-  return Object.assign({}, _dt1, _varNames.reduce(r, {}));
+  return reduce(
+    _varNames,
+    (a, k) => a.set(k, _f(a.get(k), b.get(k))),
+    new Map(_dt),
+  );
 };
 
 
 // EXPOSED
-// dataTable, function<*, array, string => *>, *, [array<string>] => *   
+// DataTable, Function<*, array, string => *>, *, [array<string>] => *   
 const reduce = async (dt, r, initial, varNames = null) => {
-  const _dt = copy(await typeCheck(1, dt, types.dataTable));
-  const _r = await typeCheck(2, r, types.function);
+  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _r = await typeCheck(2, r, types.Function);
   const _initial = await initial;
   
-  const _varNames = (!varNames) ? Object.keys(_dt) : await typeCheck(4, varNames, types.stringArray);
+  const _varNames = (!varNames) ? [..._dt.keys()] : await typeCheck(4, varNames, types.StringArray);
 
-  const iterator = (accumulator, i) => {
+  const iterator = (a, i) => {
     if (i >= _varNames.length) {
-      return accumulator;
+      return a;
     }
     
-    return iterator(_r(accumulator, _dt[_varNames[i]], _varNames[i]), i + 1);
+    return iterator(_r(a, _dt.get(_varNames[i]), _varNames[i]), i + 1);
   }
 
   return iterator(initial, 0);
@@ -103,25 +105,25 @@ const reduce = async (dt, r, initial, varNames = null) => {
 //---GETTING TABLE SIZE, VARIABLE NAMES, AND VALUES---//
 
 // EXPOSED
-// dataTable => object:{variables$number:int, observations$number:int}
+// DataTable => object:{variables$number:int, observations$number:int}
 const size = async (dt) => {
   const varNames = await variables(dt);
   const firstArray = await values(dt, varNames[0]);
 
   return {
     variables: varNames.length,
-    observations: firstArray.length,
+    observations: .length,
   };
 };
 
 
 // EXPOSED
-// dataTable => array<string>
+// DataTable => array<string>
 const variables = dt => apply(dt, Object.keys);
 
 
 // EXPOSED
-// dataTable, number:int => object
+// DataTable, number:int => object
 const observation = async (dt, n) => {
   const _n = await typeCheck(2, n, types.number, extensions.int);
 
@@ -130,7 +132,7 @@ const observation = async (dt, n) => {
 
 
 // EXPOSED
-// dataTable, string => array
+// DataTable, string => array
 const values = async (dt, varName) => {
   const _varName = await typeCheck(2, varName, types.string);
 
@@ -139,7 +141,7 @@ const values = async (dt, varName) => {
 
 
 // EXPOSED
-// dataTable, string => array
+// DataTable, string => array
 const unique = async (dt, varName) => {
   const valueArray = await values(dt, varName);
   
@@ -148,7 +150,7 @@ const unique = async (dt, varName) => {
 
 
 // EXPOSED
-// dataTable => object
+// DataTable => object
 const describe = async (dt) => {
 
 };
@@ -157,9 +159,9 @@ const describe = async (dt) => {
 //---RENAMING, SUBSETTING, AND COMBINING VARIABLE SETS---//
 
 // EXPOSED
-// dataTable, array<string> => dataTable
+// DataTable, array<string> => DataTable
 const select = async (dt, varNames) => {
-  const _dt = copy(await typeCheck(1, dt, types.dataTable));
+  const _dt = copy(await typeCheck(1, dt, types.DataTable));
   const _varNames = await typeCheck(2, varNames, types.stringArray);
   
   const r = (a, k) => Object.assign({}, a, { [k]: _dt[k] });
@@ -169,9 +171,9 @@ const select = async (dt, varNames) => {
 
 
 // EXPOSED
-// dataTable, array<string> => dataTable
+// DataTable, array<string> => DataTable
 const drop = async (dt, varNames) => {
-  const _dt = copy(await typeCheck(1, dt, types.dataTable));
+  const _dt = copy(await typeCheck(1, dt, types.DataTable));
   const _varNames = await typeCheck(2, varNames, types.stringArray);
   const keep = Object.keys(_dt).filter(v => !_varNames.includes(v));
   
@@ -182,10 +184,10 @@ const drop = async (dt, varNames) => {
 
 
 // EXPOSED
-// dataTable, function<array => boolean> => dataTable
+// DataTable, Function<array => boolean> => DataTable
 const include = async (dt, test) => {
-  const _dt = copy(await typeCheck(1, dt, types.dataTable));
-  const _test = await typeCheck(2, test, types.function);
+  const _dt = copy(await typeCheck(1, dt, types.DataTable));
+  const _test = await typeCheck(2, test, types.Function);
 
   const keep = Object.keys(_dt).filter(v => _test(_dt[v]));
 
@@ -194,9 +196,9 @@ const include = async (dt, test) => {
 
 
 // EXPOSED
-// dataTable, object => dataTable
+// DataTable, object => DataTable
 const rename = async (dt, mapping) => {
-  const _dt = copy(await typeCheck(1, dt, types.dataTable));
+  const _dt = copy(await typeCheck(1, dt, types.DataTable));
   const _mapping = await typeCheck(2, mapping, types.object);
   
   const r = (a, k) => Object.assign({}, a, { [_mapping[k]]: _dt[k] });
@@ -209,7 +211,7 @@ const rename = async (dt, mapping) => {
 
 
 // EXPOSED
-// dataTable, dataTable => dataTable
+// DataTable, DataTable => DataTable
 const assign = async (dt1, dt2) => {
   const f = (a, b) => Object.assign({}, a, b);
   const result = await apply2(dt1, dt2, f);
@@ -223,9 +225,9 @@ const assign = async (dt1, dt2) => {
 
 
 // EXPOSED
-// array<dataTable>, [array<string>], [string] => dataTable
+// array<DataTable>, [array<string>], [string] => DataTable
 const concat = async (dtArray, tableNames = [], separator = '$') => {
-  const _dtArray = await typeCheck(1, dtArray, types.dataTableArray);
+  const _dtArray = await typeCheck(1, dtArray, types.DataTableArray);
   const _tableNames = await typeCheck(2, tableNames, types.stringArray);
   const _separator = await typeCheck(3, separator, types.string);
   
@@ -252,7 +254,7 @@ const concat = async (dtArray, tableNames = [], separator = '$') => {
 //---SUBSETTING AND COMBINING OBSERVATION SETS---//
 
 // EXPOSED
-// dataTable, number:leftBoundedInt(1) => dataTable
+// DataTable, number:leftBoundedInt(1) => DataTable
 const head = async (dt, n = 5) => {
   const _n = await typeCheck(2, n, types.number, extensions.leftBoundedInt(1));
 
@@ -261,7 +263,7 @@ const head = async (dt, n = 5) => {
 
 
 // EXPOSED
-// dataTable, number:leftBoundedInt(1) => dataTable
+// DataTable, number:leftBoundedInt(1) => DataTable
 const sample = async (dt, n) => {
   const _n = await typeCheck(2, n, types.number, extensions.leftBoundedInt(1));
   const varNames = await variables(dt);
@@ -273,9 +275,9 @@ const sample = async (dt, n) => {
 
 
 // EXPOSED
-// dataTable, function<object => boolean> => dataTable
+// DataTable, Function<object => boolean> => DataTable
 const filter = async (dt, test) => {
-  const _test = await typeCheck(2, test, types.function);
+  const _test = await typeCheck(2, test, types.Function);
   const obs = await toArray(dt);
   
   return fromArray(obs.filter(_test));
@@ -283,25 +285,25 @@ const filter = async (dt, test) => {
 
 
 // EXPOSED
-// dataTable, dataTable => dataTable
+// DataTable, DataTable => DataTable
 const append = async (dt1, dt2) => map2(dt1, dt2, Array.prototype.concat);
 
 
 //---REORDERING AND TRANSFORMING TABLES---//
 
-// dataTable, function<object => number> => dataTable
+// DataTable, Function<object => number> => DataTable
 const arrange = async (dt, compare) => {
-  const _compare = await typeCheck(2, test, types.function);
+  const _compare = await typeCheck(2, test, types.Function);
   const obs = await toArray(dt);
   
   return fromArray(obs.sort(_compare));
 };
 
 
-// dataTable, string, function<* => object> => dataTable
+// DataTable, string, Function<* => object> => DataTable
 const cut = async (dt, varName, cutter) => {
   const _varName = typeCheck(2, varName, types.string);
-  const _cutter = typeCheck(3, cutter, types.function);
+  const _cutter = typeCheck(3, cutter, types.Function);
   const oldValues = await values(dt, _varName);
   const newVars = fromArray(oldValues.map(_cutter));
   
@@ -309,10 +311,10 @@ const cut = async (dt, varName, cutter) => {
 };
 
 
-// dataTable, stringArray, function<object => *> => dataTable
+// DataTable, stringArray, Function<object => *> => DataTable
 const splice = async (dt, varNames, splicer, newName) => {
   const _varNames = await typeCheck(2, varName, types.stringArray);
-  const _splicer = await typeCheck(3, splicer, types.function);
+  const _splicer = await typeCheck(3, splicer, types.Function);
   const _newName = await typeCheck(4, newName, types.string);
   const keep = await drop(dt, _varNames);
   const oldVars = await select(dt, _varNames);
@@ -323,11 +325,11 @@ const splice = async (dt, varNames, splicer, newName) => {
 };
 
 
-// dataTable, string, function => array<dataTable>
+// DataTable, string, Function => array<DataTable>
 const partition = async (dt, varName, classifier) => {
-  const _dt = copy(await typeCheck(1, dt, types.dataTable));
+  const _dt = copy(await typeCheck(1, dt, types.DataTable));
   const _varName = await typeCheck(2, varName, types.string);
-  const _classifier = await typeCheck(3, classifier, types.function);
+  const _classifier = await typeCheck(3, classifier, types.Function);
   const obs = await toArray(_dt);
   const classes = [...new Set(_dt[_varName].map(_classifier))];
   
@@ -341,18 +343,18 @@ const partition = async (dt, varName, classifier) => {
 };
 
 
-// dataTable, string, function, object => dataTable
+// DataTable, string, Function, object => DataTable
 const aggregate = async (dt, varName, classifier, aggregators) => {
-  const _dt = copy(await typeCheck(1, dt, types.dataTable));
+  const _dt = copy(await typeCheck(1, dt, types.DataTable));
   const _varName = await typeCheck(2, varName, types.string);
-  const _classifier = await typeCheck(3, classifier, types.function);
+  const _classifier = await typeCheck(3, classifier, types.Function);
 
 };
 
 
-// dataTable, array<string>, string, string => dataTable
+// DataTable, array<string>, string, string => DataTable
 const gather = async (dt, varNames, keyName, valueName) => {
-  const _dt = copy(await typeCheck(1, dt, types.dataTable));
+  const _dt = copy(await typeCheck(1, dt, types.DataTable));
   const _varNames = await typeCheck(2, varNames, types.stringArray);
   const _keyName = await typeCheck(3, keyName, types.string);
   const _valueName = await typeCheck(4, valueName, types.string);
@@ -368,9 +370,9 @@ const gather = async (dt, varNames, keyName, valueName) => {
 };
 
 
-// dataTable, string, string => dataTable
+// DataTable, string, string => DataTable
 const spread = async (dt, keyName, valueName) => {
-  const _dt = copy(await typeCheck(1, dt, types.dataTable));
+  const _dt = copy(await typeCheck(1, dt, types.DataTable));
   const _keyName = await typeCheck(2, keyName, types.string);
   const _valueName = await typeCheck(3, valueName, types.string);
   const varNames = await unique(dt, keyName);
