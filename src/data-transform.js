@@ -1,3 +1,9 @@
+const arr = {
+  every: require('@arr/every'),
+  filter: require('@arr/filter'),
+  reduce: require('@arr/reduce'),
+};
+
 const stats = require('simple-statistics');
 const checkSync = require('./type-check-sync');
 const { typeCheck, types, extensions } = require('./type-errors');
@@ -56,7 +62,7 @@ const map = async (dt, f, varNames = null) => {
   
   const _varNames = !varNames ? [..._dt.keys()] : await typeCheck(3, varNames, types.StringArray);
 
-  return reduce(
+  return arr.reduce(
     _varNames,
     (a, k) => a.set(k, _f(a.get(k))),
     new Map(_dt),
@@ -71,9 +77,9 @@ const map2 = async (dt1, dt2, f, varNames = null) => {
   const _dt2 = await typeCheck(2, dt2, types.DataTable);
   const _f = await typeCheck(3, f, types.Function);
   
-  const _varNames = !varNames ? filter([..._dt1.keys()], x => _dt2.has(x)) : await typeCheck(4, varNames, types.StringArray);
+  const _varNames = !varNames ? arr.filter([..._dt1.keys()], x => _dt2.has(x)) : await typeCheck(4, varNames, types.StringArray);
 
-  return reduce(
+  return arr.reduce(
     _varNames,
     (a, k) => a.set(k, _f(a.get(k), b.get(k))),
     new Map(_dt),
@@ -118,7 +124,30 @@ const size = async (dt) => {
 
 // EXPOSED
 // DataTable => array<string>
-const variables = dt => apply(dt, mp => [...mp.keys()]);
+const variables = async (dt) => {
+  const _dt = await typeCheck(1, dt, types.DataTable);
+
+  return [..._dt.keys()];
+};
+
+
+// EXPOSED
+// DataTable, string => array
+const values = async (dt, varName) => {
+  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _varName = await typeCheck(2, varName, types.String);
+
+  return _dt.get(_varName);
+};
+
+
+// EXPOSED
+//
+const indexes = async (dt) => {
+  const _dt = await typeCheck(1, dt, types.DataTable);
+  
+  return [..._dt.values().next().value.keys()];
+};
 
 
 // EXPOSED
@@ -128,15 +157,6 @@ const observation = async (dt, n) => {
 
   return map(dt, x => x[_n]);
 }
-
-
-// EXPOSED
-// DataTable, string => array
-const values = async (dt, varName) => {
-  const _varName = await typeCheck(2, varName, types.String);
-
-  return apply(dt, mp => mp.get(_varName));
-};
 
 
 // EXPOSED
@@ -163,7 +183,7 @@ const select = async (dt, varNames) => {
   const _dt = await typeCheck(1, dt, types.DataTable);
   const _varNames = await typeCheck(2, varNames, types.StringArray);
   
-  return reduce(
+  return arr.reduce(
     _varNames,
     (a, k) => a.set(k, _dt.get(k)),
     new Map(),
@@ -177,7 +197,7 @@ const drop = async (dt, varNames) => {
   const _dt = await typeCheck(1, dt, types.DataTable);
   const _varNames = await typeCheck(2, varNames, types.StringArray);
   
-  return reduce(
+  return arr.reduce(
     _varNames,
     (a, k) => a.delete(k),
     new Map(_dt),
@@ -191,9 +211,9 @@ const include = async (dt, test) => {
   const _dt = await typeCheck(1, dt, types.DataTable);
   const _test = await typeCheck(2, test, types.Function);
 
-  const varNames = filter([..._dt.keys()], k => _test(_dt.get(k)));
+  const varNames = arr.filter([..._dt.keys()], k => _test(_dt.get(k)));
 
-  return reduce(
+  return arr.reduce(
     varNames,
     (a, k) => a.set(k, _dt.get(k)),
     new Map(),
@@ -202,31 +222,34 @@ const include = async (dt, test) => {
 
 
 // EXPOSED
-// DataTable, object => DataTable
+// DataTable, Map<String;String> => DataTable
 const rename = async (dt, mapping) => {
-  const _dt = copy(await typeCheck(1, dt, types.DataTable));
-  const _mapping = await typeCheck(2, mapping, types.object);
+  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _mapping = await typeCheck(2, mapping, types.Map);
   
-  const r = (a, k) => Object.assign({}, a, { [_mapping[k]]: _dt[k] });
-  
-  const oldNames = Object.keys(_mapping);
-  const remaining = drop(_dt, oldNames);
-  
-  return Object.assign({}, remaining, oldNames.reduce(r, {}));
+  return arr.reduce(
+    [..._mapping.keys()],
+    (a, k) => a.delete(k).set(_mapping.get(k), _dt.get(k)),
+    new Map(_dt),
+  );
 }
 
 
 // EXPOSED
 // DataTable, DataTable => DataTable
 const assign = async (dt1, dt2) => {
-  const f = (a, b) => Object.assign({}, a, b);
-  const result = await apply2(dt1, dt2, f);
+  const _dt1 = await typeCheck(1, dt1, types.DataTable);
+  const _dt2 = await typeCheck(2, dt2, types.DataTable);
   
-  if (!(checkSync.isDataTable(result))) {
+  if (size(_dt1).observations !== size(_dt2).observations) {
     throw new Error('Assign failed because the two data tables do not have the same number of observations (i.e., arrays are not all of the same length).');
   }
   
-  return result;
+  return arr.reduce(
+    [..._dt2.keys()],
+    (a, k) => a.set(k, _dt2.get(k)),
+    new Map(_dt1),
+  );
 };
 
 
@@ -234,49 +257,56 @@ const assign = async (dt1, dt2) => {
 // array<DataTable>, [array<string>], [string] => DataTable
 const concat = async (dtArray, tableNames = [], separator = '$') => {
   const _dtArray = await typeCheck(1, dtArray, types.DataTableArray);
-  const _tableNames = await typeCheck(2, tableNames, types.stringArray);
-  const _separator = await typeCheck(3, separator, types.string);
+  const _tableNames = await typeCheck(2, tableNames, types.StringArray);
+  const _separator = await typeCheck(3, separator, types.String);
   
-  const r1 = (dt, i) => (a, k) => {
-    const prefix = (i < _tableNames.length) ? _tableNames[i] : `table${i}`;
-    return Object.assign({}, a, { [`${prefix}${_separator}${k}`]: dt[k] });
-  };
-  
-  const r2 = (a, k, i) => {
-    const prefixed = Object.keys(k).reduce(r1(k, i), {});
-    return Object.assign({}, a, prefixed);
-  };
-  
-  const result = await Promise.all(_dtArray).then(arr => arr.reduce(r2, {}));
-  
-  if (!(checkSync.isDataTable(result))) {
+  if (!arr.every(_dtArray, x => size(x).observations === size(_dtArray[0]).observations)) {
     throw new Error('Concat failed because the data tables do not have the same number of observations (i.e., arrays are not all of the same length).');
   }
   
-  return result;
+  const reducer = (a, dt, i) => {
+    const prefix = (i < _tableNames.length) ? _tableNames[i] : `table${i}`;
+    
+    dt.forEach((valueArray, varName) => {
+      a.set(`${prefix}${_separator}${varName}`, valueArray);
+    });
+  
+    return a;
+  };
+  
+  return arr.reduce(
+    _dtArray, 
+    reducer,
+    new Map(),
+  );
 };
 
 
 //---SUBSETTING AND COMBINING OBSERVATION SETS---//
 
 // EXPOSED
-// DataTable, number:leftBoundedInt(1) => DataTable
+// DataTable, Number:LeftBoundedInt(1) => DataTable
 const head = async (dt, n = 5) => {
-  const _n = await typeCheck(2, n, types.number, extensions.leftBoundedInt(1));
+  const _n = await typeCheck(2, n, types.Number, extensions.LeftBoundedInt(1));
 
   return map(dt, x => x.slice(0, _n));
 };
 
 
 // EXPOSED
-// DataTable, number:leftBoundedInt(1) => DataTable
+// DataTable, Number:LeftBoundedInt(1) => DataTable
 const sample = async (dt, n) => {
-  const _n = await typeCheck(2, n, types.number, extensions.leftBoundedInt(1));
-  const varNames = await variables(dt);
-  const firstArray = await values(dt, varNames[0]);
-  const selected = stats.sample([...firstArray.keys()], _n);
+  const _n = await typeCheck(2, n, types.Number, extensions.LeftBoundedInt(1));
 
-  return map(dt, x => x.filter((c, i) => selected.includes(i)));
+  const selected = stats.sample(await indexes(dt), _n);
+  
+  const callback = x => arr.reduce(
+    selected,
+    (a, k, i) => a[i] = k,
+    new x.constructor(selected.length),
+  );
+
+  return map(dt, callback);  
 };
 
 
