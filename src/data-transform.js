@@ -3,12 +3,12 @@ const arr = {
   filter: require('@arr/filter'),
   reduce: require('@arr/reduce'),
 };
-
-const stats = require('simple-statistics');
-const checkSync = require('./type-check-sync');
-const { typeCheck, types, extensions } = require('./type-errors');
+const { typeCheck } = require('./type-errors');
+const { types } = require('@danielnarey/data-types');
+const { extensions } = require('./type-extensions');
 const { fromArray } = require('./data-import');
 const { toArray } = require('./data-export');
+const stats = require('simple-statistics');
 
 
 //---Function APPLICATION (WITH IMPLICIT PROMISE CHAINING)---//
@@ -16,7 +16,7 @@ const { toArray } = require('./data-export');
 // EXPOSED 
 // DataTable, Function<DataTable, [**] => *>, [**] => * 
 const apply = async (dt, f, ...args) => {
-  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
   const _f = await typeCheck(2, f, types.Function);
   
   return _f(...[].concat(new Map(_dt), args));
@@ -26,8 +26,8 @@ const apply = async (dt, f, ...args) => {
 // EXPOSED 
 // DataTable, DataTable, Function<DataTable, DataTable, [**] => *>, [**] => *
 const apply2 = async (dt1, dt2, f, ...args) => {
-  const _dt1 = await typeCheck(1, dt1, types.DataTable);
-  const _dt2 = await typeCheck(2, dt2, types.DataTable);
+  const _dt1 = await typeCheck(1, dt1, types.Map, extensions.DataTable);
+  const _dt2 = await typeCheck(2, dt2, types.Map, extensions.DataTable);
   const _f = await typeCheck(3, f, types.Function);
   
   return _f(...[].concat(new Map(_dt1), new Map(_dt2), args));
@@ -39,7 +39,7 @@ const apply2 = async (dt1, dt2, f, ...args) => {
 // EXPOSED
 // DataTable, Array<Function> => *
 const pipe = async (dt, fArray) => {
-  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
   const _fArray = await typeCheck(2, fArray, types.FunctionArray);
 
   const iterator = (lastResult, i) => {
@@ -57,7 +57,7 @@ const pipe = async (dt, fArray) => {
 // EXPOSED 
 // DataTable, Function<Array => *>, [Array<String>] => Map<String;*>
 const map = async (dt, f, varNames = null) => {
-  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
   const _f = await typeCheck(2, f, types.Function);
   
   const _varNames = !varNames ? [..._dt.keys()] : await typeCheck(3, varNames, types.StringArray);
@@ -73,8 +73,8 @@ const map = async (dt, f, varNames = null) => {
 // EXPOSED 
 // DataTable, Function<array => *>, [array<string>] => object
 const map2 = async (dt1, dt2, f, varNames = null) => {
-  const _dt1 = await typeCheck(1, dt1, types.DataTable);
-  const _dt2 = await typeCheck(2, dt2, types.DataTable);
+  const _dt1 = await typeCheck(1, dt1, types.Map, extensions.DataTable);
+  const _dt2 = await typeCheck(2, dt2, types.Map, extensions.DataTable);
   const _f = await typeCheck(3, f, types.Function);
   
   const _varNames = !varNames ? arr.filter([..._dt1.keys()], x => _dt2.has(x)) : await typeCheck(4, varNames, types.StringArray);
@@ -90,7 +90,7 @@ const map2 = async (dt1, dt2, f, varNames = null) => {
 // EXPOSED
 // DataTable, Function<*, array, string => *>, *, [array<string>] => *   
 const reduce = async (dt, r, initial, varNames = null) => {
-  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
   const _r = await typeCheck(2, r, types.Function);
   const _initial = await initial;
   
@@ -111,9 +111,9 @@ const reduce = async (dt, r, initial, varNames = null) => {
 //---GETTING TABLE SIZE, VARIABLE NAMES, AND VALUES---//
 
 // EXPOSED
-// DataTable => object:{variables$number:int, observations$number:int}
+// DataTable => Object:{ variables$Number:LeftBoundedInt(0), observations$Number:LeftBoundedInt(0)}
 const size = async (dt) => {
-  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
 
   return {
     variables: _dt.size,
@@ -125,7 +125,7 @@ const size = async (dt) => {
 // EXPOSED
 // DataTable => array<string>
 const variables = async (dt) => {
-  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
 
   return [..._dt.keys()];
 };
@@ -134,7 +134,7 @@ const variables = async (dt) => {
 // EXPOSED
 // DataTable, string => array
 const values = async (dt, varName) => {
-  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
   const _varName = await typeCheck(2, varName, types.String);
 
   return _dt.get(_varName);
@@ -144,7 +144,7 @@ const values = async (dt, varName) => {
 // EXPOSED
 //
 const indexes = async (dt) => {
-  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
   
   return [..._dt.values().next().value.keys()];
 };
@@ -180,7 +180,7 @@ const describe = async (dt) => {
 // EXPOSED
 // DataTable, array<string> => DataTable
 const select = async (dt, varNames) => {
-  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
   const _varNames = await typeCheck(2, varNames, types.StringArray);
   
   return arr.reduce(
@@ -194,7 +194,7 @@ const select = async (dt, varNames) => {
 // EXPOSED
 // DataTable, array<string> => DataTable
 const drop = async (dt, varNames) => {
-  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
   const _varNames = await typeCheck(2, varNames, types.StringArray);
   
   return arr.reduce(
@@ -208,7 +208,7 @@ const drop = async (dt, varNames) => {
 // EXPOSED
 // DataTable, Function<array => boolean> => DataTable
 const include = async (dt, test) => {
-  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
   const _test = await typeCheck(2, test, types.Function);
 
   const varNames = arr.filter([..._dt.keys()], k => _test(_dt.get(k)));
@@ -224,7 +224,7 @@ const include = async (dt, test) => {
 // EXPOSED
 // DataTable, Map<String;String> => DataTable
 const rename = async (dt, mapping) => {
-  const _dt = await typeCheck(1, dt, types.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
   const _mapping = await typeCheck(2, mapping, types.Map);
   
   return arr.reduce(
@@ -238,8 +238,8 @@ const rename = async (dt, mapping) => {
 // EXPOSED
 // DataTable, DataTable => DataTable
 const assign = async (dt1, dt2) => {
-  const _dt1 = await typeCheck(1, dt1, types.DataTable);
-  const _dt2 = await typeCheck(2, dt2, types.DataTable);
+  const _dt1 = await typeCheck(1, dt1, types.Map, extensions.DataTable);
+  const _dt2 = await typeCheck(2, dt2, types.Map, extensions.DataTable);
   
   if (size(_dt1).observations !== size(_dt2).observations) {
     throw new Error('Assign failed because the two data tables do not have the same number of observations (i.e., arrays are not all of the same length).');
@@ -256,7 +256,7 @@ const assign = async (dt1, dt2) => {
 // EXPOSED
 // array<DataTable>, [array<string>], [string] => DataTable
 const concat = async (dtArray, tableNames = [], separator = '$') => {
-  const _dtArray = await typeCheck(1, dtArray, types.DataTableArray);
+  const _dtArray = await typeCheck(1, dtArray, types.Map, extensions.DataTableArray);
   const _tableNames = await typeCheck(2, tableNames, types.StringArray);
   const _separator = await typeCheck(3, separator, types.String);
   
@@ -312,17 +312,15 @@ const sample = async (dt, n) => {
 
 // EXPOSED
 // DataTable, Function<object => boolean> => DataTable
-const filter = async (dt, test) => {
+const filter = async (dt, varName, test) => {
   const _test = await typeCheck(2, test, types.Function);
-  const obs = await toArray(dt);
   
-  return fromArray(obs.filter(_test));
 };
 
 
 // EXPOSED
 // DataTable, DataTable => DataTable
-const append = async (dt1, dt2) => map2(dt1, dt2, Array.prototype.concat);
+const append = (dt1, dt2) => map2(dt1, dt2, Array.prototype.concat);
 
 
 //---REORDERING AND TRANSFORMING TABLES---//
@@ -363,7 +361,7 @@ const splice = async (dt, varNames, splicer, newName) => {
 
 // DataTable, string, Function => array<DataTable>
 const partition = async (dt, varName, classifier) => {
-  const _dt = copy(await typeCheck(1, dt, types.DataTable));
+  const _dt = copy(await typeCheck(1, dt, types.Map, extensions.DataTable));
   const _varName = await typeCheck(2, varName, types.string);
   const _classifier = await typeCheck(3, classifier, types.Function);
   const obs = await toArray(_dt);
@@ -381,7 +379,7 @@ const partition = async (dt, varName, classifier) => {
 
 // DataTable, string, Function, object => DataTable
 const aggregate = async (dt, varName, classifier, aggregators) => {
-  const _dt = copy(await typeCheck(1, dt, types.DataTable));
+  const _dt = copy(await typeCheck(1, dt, types.Map, extensions.DataTable));
   const _varName = await typeCheck(2, varName, types.string);
   const _classifier = await typeCheck(3, classifier, types.Function);
 
@@ -390,7 +388,7 @@ const aggregate = async (dt, varName, classifier, aggregators) => {
 
 // DataTable, array<string>, string, string => DataTable
 const gather = async (dt, varNames, keyName, valueName) => {
-  const _dt = copy(await typeCheck(1, dt, types.DataTable));
+  const _dt = copy(await typeCheck(1, dt, types.Map, extensions.DataTable));
   const _varNames = await typeCheck(2, varNames, types.stringArray);
   const _keyName = await typeCheck(3, keyName, types.string);
   const _valueName = await typeCheck(4, valueName, types.string);
@@ -408,7 +406,7 @@ const gather = async (dt, varNames, keyName, valueName) => {
 
 // DataTable, string, string => DataTable
 const spread = async (dt, keyName, valueName) => {
-  const _dt = copy(await typeCheck(1, dt, types.DataTable));
+  const _dt = copy(await typeCheck(1, dt, types.Map, extensions.DataTable));
   const _keyName = await typeCheck(2, keyName, types.string);
   const _valueName = await typeCheck(3, valueName, types.string);
   const varNames = await unique(dt, keyName);
