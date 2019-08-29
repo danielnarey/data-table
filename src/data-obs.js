@@ -6,10 +6,14 @@ const { toArray } = require('./data-export');
 const stats = require('simple-statistics');
 
 
-// EXPOSED: MODULE, PACKAGE
-// @ ^Map:DataTable
-// @ ^Number:Int<1> 
-// @@ ^Map:DataTable
+/**
+ * EXPOSED by MODULE, PACKAGE as sample
+ * # Returns a data table containing a random sample of *n* observations
+ * # from *dt*
+ * @dt ^Map:DataTable -> `awaits Map [more precisely: DataTable]`
+ * @n ^Number:Int<1> -> `awaits Number [more precisely: Int (n >= 1)]`
+ * @@ ^Map:DataTable -> `rejects or resolves to Map [more precisely: DataTable]`
+ */
 const sample = async (dt, n) => {
   const _n = await typeCheck(2, n, types.Number, extensions.LeftBoundedInt(1));
 
