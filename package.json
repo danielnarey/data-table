@@ -1,10 +1,11 @@
 {
-  "name": "data-table",
-  "version": "1.0.0",
+  "name": "@danielnarey/data-table",
+  "version": "0.0.0",
   "description": "Data wrangling with Node.js",
   "private": true,
   "main": "index.js",
   "scripts": {
+    "release": "np",
     "sync": "git add . && git commit -m 'automated sync' && git push",
     "test": "eslint '**/*.js' && ava"
   },
@@ -16,21 +17,25 @@
   "author": "Daniel C. Narey",
   "license": "MIT",
   "engines": {
-    "node": ">=8"
+    "node": ">=10"
   },
   "dependencies": {
-    "@danielnarey/data-types": "^0.1.0",
+    "@danielnarey/data-types": "^0.2.2",
     "fs-extra": "^8.1.0",
     "got": "^9.6.0",
     "neat-csv": "^5.1.0",
     "simple-statistics": "^7.0.5"
   },
   "devDependencies": {
-    "ava": "^2.2.0",
-    "eslint": "^6.1.0",
-    "eslint-config-airbnb-base": "^13.2.0",
-    "eslint-plugin-ava": "^7.1.0",
+    "ava": "^2.3.0",
+    "eslint": "^6.2.2",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-ava": "^8.0.0",
     "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-types": "^1.0.2"
+    "eslint-plugin-types": "^1.0.2",
+    "np": "^5.0.3"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

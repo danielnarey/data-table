@@ -5,9 +5,9 @@ const arr = {
 const { checkSync, checkAsync } = require('@danielnarey/data-types');
 
 
-// EXPOSED: MODULE, PACKAGE
+// EXPOSED: MODULE
 // Map => Boolean
-const isDataTable = (mp) => {
+const isDataTableSync = (mp) => {
   if (mp.size === 0) {
     return false;
   }
@@ -46,17 +46,17 @@ const extensions = {
     test: obj => arr.every(keys, k => arr.includes(Object.keys(obj), k)),
   }),
   DataTable: {
-    desc: 'a Data Table (defined as a Map with at least one entry, where the values are standard arrays and/or TypedArray buffers, all of equal length)',
-    test: isDataTable,
+    desc: 'a Data Table (defined as a Map with at least one entry, where the values are equal-length standard arrays or TypedArray buffers)',
+    test: isDataTableSync,
   },
   DataTableArray: {
     desc: 'an Array of Data Tables',
-    test: a => arr.every(a, x => isDataTable(x)),
+    test: a => arr.every(a, x => checkSync.isMap(x) && isDataTableSync(x)),
   },
 };
 
 
 module.exports = {
-  isDataTable,
+  isDataTableSync,
   extensions,
 };
