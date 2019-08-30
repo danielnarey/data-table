@@ -3,45 +3,6 @@
 const { map } = require('./data-apply');
 const { fromArray } = require('./data-import');
 const { toArray } = require('./data-export');
-const stats = require('simple-statistics');
-
-
-/**
- * EXPOSED by MODULE, PACKAGE as sample
- * # Returns a data table containing a random sample of *n* observations
- * # from *dt*
- * @dt ^Map:DataTable -> `awaits Map [more precisely: DataTable]`
- * @n ^Number:Int<1> -> `awaits Number [more precisely: Int (n >= 1)]`
- * @@ ^Map:DataTable -> `rejects or resolves to Map [more precisely: DataTable]`
- */
-const sample = async (dt, n) => {
-  const _n = await typeCheck(2, n, types.Number, extensions.LeftBoundedInt(1));
-
-  const selected = stats.sample(await indexes(dt), _n);
-  
-  const callback = x => arr.reduce(
-    selected,
-    (a, k, i) => a[i] = k,
-    new x.constructor(selected.length),
-  );
-
-  return map(dt, callback);
-};
-
-
-// EXPOSED: MODULE, PACKAGE
-// Map:DataTable, Function<object => boolean> => Map:DataTable
-const filter = async (dt, varName, test) => {
-  const selected = await whichObs(dt, varName, test);
-  
-  const callback = x => arr.reduce(
-    selected,
-    (a, k, i) => a[i] = k,
-    new x.constructor(selected.length),
-  );
-
-  return map(dt, callback);
-};
 
 
 // EXPOSED: MODULE, PACKAGE
