@@ -1,4 +1,4 @@
-import arr$reduce from '@arr/reduce';
+import arr from './arr';
 import whichObs from './which-obs';
 import map from './map';
 
@@ -15,7 +15,7 @@ import map from './map';
 const filter = async (dt, varName, test) => {
   const selected = await whichObs(dt, varName, test);
   
-  const callback = x => arr$reduce(
+  const callback = x => arr.reduce(
     selected,
     (a, k, i) => a[i] = k,
     new x.constructor(selected.length),

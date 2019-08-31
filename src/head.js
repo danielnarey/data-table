@@ -1,5 +1,5 @@
-import arr$reduce from '@arr/reduce';
 import { typeCheck, types, extensions } from './runtime-checks';
+import arr from './arr';
 
 
 /**
@@ -14,7 +14,7 @@ const head = async (dt, n = 5) => {
   const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
   const _n = await typeCheck(2, n, types.Number, extensions.Int(1));
 
-  return arr$reduce(
+  return arr.reduce(
     [..._dt.keys()],
     (a, k) => a.set(k, _dt.get(k).slice(0, _n)),
     new Map(),

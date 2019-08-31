@@ -1,6 +1,5 @@
-import arr$every from '@arr/every';
-import arr$includes from '@arr/includes';
 import { checkSync, checkAsync, types } from '@danielnarey/data-types';
+import arr from './arr';
 
 
 // INTERNAL
@@ -52,11 +51,11 @@ const isDataTableSync = (mp) => {
   
   const values = [...mp.values()];
 
-  if (!arr$every(values, x => checkSync.isArray(x) || checkSync.isTypedArray(x))) {
+  if (!arr.every(values, x => checkSync.isArray(x) || checkSync.isTypedArray(x))) {
     return false;
   }
 
-  if (!arr$every(values, x => x.length === values[0].length)) {
+  if (!arr.every(values, x => x.length === values[0].length)) {
     return false;
   }
 
@@ -73,7 +72,7 @@ const extensions = {
   }),
   HasKeys: (keys) => ({
     desc: `an object with the following keys: ${keys.join(', ')}`,
-    test: obj => arr$every(keys, k => arr$includes(Object.keys(obj), k)),
+    test: obj => arr.every(keys, k => arr.includes(Object.keys(obj), k)),
   }),
   DataTable: {
     desc: 'a Data Table (defined as a Map with at least one entry, where the values are equal-length standard arrays or TypedArray buffers)',
@@ -81,7 +80,7 @@ const extensions = {
   },
   DataTableArray: {
     desc: 'an Array of Data Tables',
-    test: a => arr$every(a, x => checkSync.isMap(x) && isDataTableSync(x)),
+    test: a => arr.every(a, x => checkSync.isMap(x) && isDataTableSync(x)),
   },
 };
 

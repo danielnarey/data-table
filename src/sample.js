@@ -1,6 +1,6 @@
-import arr$reduce from '@arr/reduce';
-import stats from 'simple-statistics';
 import { typeCheck, types, extensions } from './runtime-checks';
+import arr from './arr';
+import stats from 'simple-statistics';
 import indexes from './indexes';
 import map from './map';
 
@@ -19,7 +19,7 @@ const sample = async (dt, n) => {
 
   const selected = stats.sample(_indexes, _n);
 
-  const callback = x => arr$reduce(
+  const callback = x => arr.reduce(
     selected,
     (a, k, i) => a[i] = k,
     new x.constructor(selected.length),
