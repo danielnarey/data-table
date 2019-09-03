@@ -11,7 +11,7 @@ import arr from './arr';
  * @@ ^Map:DataTable
  */
 const head = async (dt, n = 5) => {
-  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.isDataTable);
   const _n = await typeCheck(2, n, types.Number, extensions.Int(1));
 
   return arr.reduce(

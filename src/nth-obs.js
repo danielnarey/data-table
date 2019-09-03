@@ -10,8 +10,8 @@ import arr from './arr';
  * @@ ^Map<String;*>
  */
 const nthObs = async (dt, n) => {
-  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
-  const _n = await typeCheck(2, n, types.Number, extensions.Int(0));
+  const _dt = await typeCheck(1, dt, types.Map, extensions.isDataTable);
+  const _n = await typeCheck(2, n, types.Number, extensions.isInt(0));
 
   return arr.reduce(
     [..._dt.keys()],

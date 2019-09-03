@@ -10,7 +10,7 @@ import { typeCheck, types, extensions } from './runtime-checks';
  * @@ ^*
  */
 const pipe = async (dt, fArray) => {
-  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.isDataTable);
   const _fArray = await typeCheck(2, fArray, types.FunctionArray);
 
   const iterator = (lastResult, i) => {

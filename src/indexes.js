@@ -3,15 +3,18 @@ import { typeCheck, types, extensions } from './runtime-checks';
 
 /**
  * % EXPOSED by MODULE as default, PACKAGE as indexes
- * # Returns an array containing the index of each observation in *dt*,
- * # starting from 0 and increasing to `size(dt).observations - 1`.
+ * # Returns an array containing the sequence of indexes from 0 to one less 
+ * # than the size of *dt*.
  * @dt ^Map:DataTable
- * @@ ^Array<Number:Int<0>>
+ * @@ ^TypedArray:Uint32Array
  */
 const indexes = async (dt) => {
-  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
+  const _size = await size(dt);
   
-  return [..._dt.values().next().value.keys()];
+  return Uint32Array.from(
+    { length: _size.observations }, 
+    (x, i) => i,
+  );
 };
 
 

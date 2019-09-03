@@ -11,7 +11,7 @@ import arr from './arr';
  * @@ ^Map:DataTable
  */
 const drop = async (dt, varNames) => {
-  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.isDataTable);
   const _varNames = await typeCheck(2, varNames, types.StringArray);
   
   return arr.reduce(

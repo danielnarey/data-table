@@ -1,24 +1,3 @@
-//---SUBSETTING & COMBINING OBSERVATION SETS---//
-
-const { map } = require('./data-apply');
-const { fromArray } = require('./data-import');
-const { toArray } = require('./data-export');
-
-
-// EXPOSED: MODULE, PACKAGE
-// Map:DataTable, Map:DataTable => Map:DataTable
-const append = (dt1, dt2) => map2(dt1, dt2, Array.prototype.concat);
-
-
-//---REORDERING AND TRANSFORMING TABLES---//
-
-// Map:DataTable, Function<object => number> => Map:DataTable
-const arrange = async (dt, compare) => {
-  const _compare = await typeCheck(2, test, types.Function);
-  const obs = await toArray(dt);
-  
-  return fromArray(obs.sort(_compare));
-};
 
 
 

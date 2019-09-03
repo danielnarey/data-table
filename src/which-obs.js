@@ -10,7 +10,7 @@ import values from './values';
  * @dt ^Map:DataTable
  * @varName ^String
  * @test ^Function<* => Boolean>
- * @@ ^Array<Number:Int<0>>
+ * @@ ^TypedArray:Uint32Array
  */
 const whichObs = async (dt, varName, test) => {
   const _test = await typeCheck(3, test, types.Function);
@@ -23,7 +23,7 @@ const whichObs = async (dt, varName, test) => {
     }
   });
   
-  return out;
+  return Uint32Array.from(out);
 };
 
 

@@ -11,7 +11,7 @@ import { typeCheck, types, extensions } from './runtime-checks';
  * @@ ^*
  */
 const apply = async (dt, f, ...args) => {
-  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.isDataTable);
   const _f = await typeCheck(2, f, types.Function);
   
   return _f(...[].concat(new Map(_dt), args));

@@ -18,8 +18,8 @@ import arr from './arr';
  * @@ ^Map:<String;*>
  */
  const map2 = async (dt1, dt2, f, varNames = null) => {
-  const _dt1 = await typeCheck(1, dt1, types.Map, extensions.DataTable);
-  const _dt2 = await typeCheck(2, dt2, types.Map, extensions.DataTable);
+  const _dt1 = await typeCheck(1, dt1, types.Map, extensions.isDataTable);
+  const _dt2 = await typeCheck(2, dt2, types.Map, extensions.isDataTable);
   const _f = await typeCheck(3, f, types.Function);
   
   const _varNames = (

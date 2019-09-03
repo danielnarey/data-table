@@ -13,7 +13,7 @@ import { typeCheck, types, extensions } from './runtime-checks';
  * @@ ^*
  */
  const reduce = async (dt, r, initial, varNames = null) => {
-  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.isDataTable);
   const _r = await typeCheck(2, r, types.Function);
   const _initial = await initial;
   

@@ -12,7 +12,7 @@ import arr from './arr';
  * @@ ^Map<String;Array|TypedArray>
  */
 const include = async (dt, test) => {
-  const _dt = await typeCheck(1, dt, types.Map, extensions.DataTable);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.isDataTable);
   const _test = await typeCheck(2, test, types.Function);
 
   const varNames = arr.filter(

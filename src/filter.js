@@ -14,14 +14,11 @@ import map from './map';
  */
 const filter = async (dt, varName, test) => {
   const selected = await whichObs(dt, varName, test);
-  
-  const callback = x => arr.reduce(
-    selected,
-    (a, k, i) => a[i] = k,
-    new x.constructor(selected.length),
-  );
 
-  return map(dt, callback);
+  return map(
+    dt, 
+    x => x.constructor.from(selected, i => x[i]),
+  );
 };
 
 

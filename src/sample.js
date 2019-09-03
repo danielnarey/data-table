@@ -19,13 +19,10 @@ const sample = async (dt, n) => {
 
   const selected = stats.sample(_indexes, _n);
 
-  const callback = x => arr.reduce(
-    selected,
-    (a, k, i) => a[i] = k,
-    new x.constructor(selected.length),
+  return map(
+    dt, 
+    x => x.constructor.from(selected, i => x[i]),
   );
-
-  return map(dt, callback);
 };
 
 
