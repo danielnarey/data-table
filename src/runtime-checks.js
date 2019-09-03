@@ -66,19 +66,26 @@ const isDataTableSync = (mp) => {
 // EXPOSED: MODULE
 // object:{ _${ desc$String, test$Function<* => Boolean> } }
 const extensions = {
-  Int: (min = null, max = null) => ({
+  isInt: (min = null, max = null) => ({
     desc: `an integer not less than ${min} and not greater than ${max}`,
     test: n => Number.isInteger(n) && n >= min && n <= max,
   }),
-  HasKeys: (keys) => ({
+  isFloat: (min = null, max = null) => ({
+  
+  }),
+  hasLength: (min = null, max = null) => ({
+  
+  }),
+  hasSize:
+  hasKeys: (keys) => ({
     desc: `an object with the following keys: ${keys.join(', ')}`,
     test: obj => arr.every(keys, k => arr.includes(Object.keys(obj), k)),
   }),
-  DataTable: {
+  isDataTable: {
     desc: 'a Data Table (defined as a Map with at least one entry, where the values are equal-length standard arrays or TypedArray buffers)',
     test: isDataTableSync,
   },
-  DataTableArray: {
+  isDataTableArray: {
     desc: 'an Array of Data Tables',
     test: a => arr.every(a, x => checkSync.isMap(x) && isDataTableSync(x)),
   },
