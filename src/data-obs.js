@@ -3,22 +3,7 @@
 
 
 
-// Map:DataTable, string, Function => array<DataTable>
-const partition = async (dt, varName, classifier) => {
-  const _dt = copy(await typeCheck(1, dt, types.Map, extensions.DataTable));
-  const _varName = await typeCheck(2, varName, types.string);
-  const _classifier = await typeCheck(3, classifier, types.Function);
-  const obs = await toArray(_dt);
-  const classes = [...new Set(_dt[_varName].map(_classifier))];
-  
-  const r = (a, k) => {
-    const byClass = obs.filter(x => _classifer(x[_varName]) === k);
-    
-    return [].concat(a, byClass);
-  };
-     
-  return classes.reduce(r, []).map(fromArray);      
-};
+
 
 
 // Map:DataTable, string, Function, object => Map:DataTable
@@ -28,7 +13,6 @@ const aggregate = async (dt, varName, classifier, aggregators) => {
   const _classifier = await typeCheck(3, classifier, types.Function);
 
 };
-
 
 // Map:DataTable, array<string>, string, string => Map:DataTable
 const gather = async (dt, varNames, keyName, valueName) => {

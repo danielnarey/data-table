@@ -11,7 +11,11 @@ import map2 from './map2';
  * @dt2 ^Map:DataTable
  * @@ ^Map<String;Array|TypedArray>
  */
-const append = (dt1, dt2) => map2(dt1, dt2, Array.prototype.concat);
+const append = (dt1, dt2) => map2(
+  dt1, 
+  dt2, 
+  Array.prototype.concat,
+);
 
 
 export default append;

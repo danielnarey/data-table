@@ -1,5 +1,5 @@
 import { typeCheck, types, extensions } from './runtime-checks';
-
+import ops from './table-operations';
 
 /**
  * % EXPOSED by MODULE as default, PACKAGE as size
@@ -15,7 +15,7 @@ const size = async (dt) => {
 
   return {
     variables: _dt.size,
-    observations: _dt.values().next().value.length,
+    observations: ops.nObs(_dt),
   };
 };
 

@@ -1,5 +1,5 @@
 import { typeCheck, types, extensions } from './runtime-checks';
-
+import ops from './table-operations';
 
 /**
  * % EXPOSED by MODULE as default, PACKAGE as indexes
@@ -9,12 +9,9 @@ import { typeCheck, types, extensions } from './runtime-checks';
  * @@ ^TypedArray:Uint32Array
  */
 const indexes = async (dt) => {
-  const _size = await size(dt);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.isDataTable);
   
-  return Uint32Array.from(
-    { length: _size.observations }, 
-    (x, i) => i,
-  );
+  return ops.indexes(_dt);
 };
 
 

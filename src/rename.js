@@ -1,5 +1,5 @@
 import { typeCheck, types, extensions } from './runtime-checks';
-import arr from './arr';
+import ops from './table-operations';
 
 
 /**
@@ -14,10 +14,9 @@ const rename = async (dt, mapping) => {
   const _dt = await typeCheck(1, dt, types.Map, extensions.isDataTable);
   const _mapping = await typeCheck(2, mapping, types.Map, extensions.hasSize(1));
   
-  return arr.reduce(
-    [..._mapping.keys()],
-    (a, k) => a.delete(k).set(_mapping.get(k), _dt.get(k)),
-    new Map(_dt),
+  return ops.mapKeys(
+    _dt,
+    k => mapping.get(k), 
   );
 };
 

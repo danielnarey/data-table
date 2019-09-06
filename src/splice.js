@@ -1,7 +1,6 @@
 import { typeCheck, types, extensions } from './runtime-checks';
 import arr from './arr';
-import drop from './drop';
-import indexes from './indexes';
+import ops from './table-operations';
 
 
 /**
@@ -27,21 +26,15 @@ const splice = async (dt, varNames, splicer, newName = null) => {
       : await typeCheck(4, newName, types.String)
   );
   
-  const _indexes = await indexes(_dt);
-  const _initial = await drop(_dt, varNames);
-  
   const newValues = arr.map(
-    _indexes, 
-    x => _splicer(
-      arr.reduce(
-        _varNames,
-        (a, k) => a.set(k, _dt.get(k)[_n]),
-        new Map(),
-      ),
-    ),
+    ops.indexes(_dt), 
+    i => _splicer(ops.mapValues(x => x[i])),
   );
   
-  return (new Map(_initial)).set(_newName, newValues); 
+  return new Map(
+    ...ops.drop(_dt, _varNames),
+    [_newName, newValues],
+  ); 
 };
 
 

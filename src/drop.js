@@ -1,5 +1,5 @@
 import { typeCheck, types, extensions } from './runtime-checks';
-import arr from './arr';
+import ops from './table-operations';
 
 
 /**
@@ -14,11 +14,7 @@ const drop = async (dt, varNames) => {
   const _dt = await typeCheck(1, dt, types.Map, extensions.isDataTable);
   const _varNames = await typeCheck(2, varNames, types.StringArray);
   
-  return arr.reduce(
-    _varNames,
-    (a, k) => a.delete(k),
-    new Map(_dt),
-  );
+  return ops.drop(_dt, _varNames);
 };
 
 

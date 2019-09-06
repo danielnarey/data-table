@@ -13,10 +13,12 @@ import map from './map';
  * @@ ^Map:DataTable
  */
 const filter = async (dt, varName, test) => {
-  const selected = await whichObs(dt, varName, test);
+  const _dt = await typeCheck(1, dt, types.Map, extensions.isDataTable);
 
-  return map(
-    dt, 
+  const selected = await whichObs(_dt, varName, test);
+
+  return ops.mapValues(
+    _dt, 
     x => x.constructor.from(selected, i => x[i]),
   );
 };

@@ -1,6 +1,5 @@
 import { typeCheck, types, extensions } from './runtime-checks';
-import arr from './arr';
-import size from './size';
+import ops from './table-operations';
 
 
 /**
@@ -16,15 +15,16 @@ const assign = async (dt1, dt2) => {
   const _dt1 = await typeCheck(1, dt1, types.Map, extensions.isDataTable);
   const _dt2 = await typeCheck(2, dt2, types.Map, extensions.isDataTable);
   
-  if (size(_dt1).observations !== size(_dt2).observations) {
-    throw new Error('Assign failed because the two data tables do not have the same number of observations (i.e., arrays are not all of the same length).');
+  if (ops.nObs(_dt1) !== ops.nObs(_dt2)) {
+    throw new Error(
+      'Assign failed because the two data tables do not have the same number of observations (i.e., arrays are not all of the same length).'
+    );
   }
   
-  return arr.reduce(
-    [..._dt2.keys()],
-    (a, k) => a.set(k, _dt2.get(k)),
-    new Map(_dt1),
-  );
+  return new Map([
+    ..._dt1, 
+    ..._dt2,
+  ]);
 };
 
 

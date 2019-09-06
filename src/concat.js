@@ -1,5 +1,6 @@
 import { typeCheck, types, extensions } from './runtime-checks';
 import arr from './arr';
+import ops from './table-operations';
 
 
 /**
@@ -18,25 +19,23 @@ const concat = async (dtArray, tableNames = [], separator = '$') => {
   const _tableNames = await typeCheck(2, tableNames, types.StringArray);
   const _separator = await typeCheck(3, separator, types.String);
   
-  if (!arr.every(
-    _dtArray, 
-    x => size(x).observations === size(_dtArray[0]).observations,
-  )) {
-    throw new Error('Concat failed because the data tables do not have the same number of observations (i.e., arrays are not all of the same length).');
+  if (!arr.every(_dtArray, x => ops.nObs(x) === ops.nObs(_dtArray[0]))) {
+    throw new Error(
+      'Concat failed because the data tables do not have the same number of observations (i.e., arrays are not all of the same length).'
+    );
   }
   
-  const reducer = (a, dt, i) => {
+  const reducer = (a, k, i) => {
     const prefix = (
       i < _tableNames.length
         ? _tableNames[i] 
         : `table${i}`
     );
     
-    dt.forEach((valueArray, varName) => {
-      a.set(`${prefix}${_separator}${varName}`, valueArray);
-    });
-  
-    return a;
+    return new Map([
+      ...a, 
+      ...ops.mapKeys(k, (varName) => `${prefix}${_separator}${varName}`),
+    ]); 
   };
   
   return arr.reduce(

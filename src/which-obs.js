@@ -1,6 +1,5 @@
 import { typeCheck, types, extensions } from './runtime-checks';
 import arr from './arr';
-import values from './values';
 
 
 /**
@@ -13,11 +12,13 @@ import values from './values';
  * @@ ^TypedArray:Uint32Array
  */
 const whichObs = async (dt, varName, test) => {
+  const _dt = await typeCheck(1, dt, types.Map, extensions.isDataTable);
+  const _varName = await typeCheck(2, varName, types.String);
   const _test = await typeCheck(3, test, types.Function);
-  const _values = await values(dt, varName);
+  
   const out = [];
   
-  arr.forEach(_values, (x, i) => {
+  arr.forEach(_dt.get(_varName), (x, i) => {
     if (_test(x)) {
       out.push(i);
     }

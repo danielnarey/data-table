@@ -1,5 +1,6 @@
+import { typeCheck, types, extensions } from './runtime-checks';
 import arr from './arr';
-import map from './map';
+import ops from './table-operations';
 import sortOrder from './sort-order';
 
 
@@ -13,10 +14,12 @@ import sortOrder from './sort-order';
  * @@ ^Map:DataTable
  */
 const arrange = async (dt, varName, compare) => {
+  const _dt = await typeCheck(1, dt, types.Map, extensions.isDataTable);
+
   const order = await sortOrder(dt, varName, compare);
 
-  return map(
-    dt, 
+  return ops.mapValues(
+    _dt, 
     x => x.constructor.from(order, k => x[k]),
   );
 };

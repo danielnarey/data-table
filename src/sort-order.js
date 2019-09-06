@@ -1,6 +1,5 @@
 import { typeCheck, types, extensions } from './runtime-checks';
-import indexes from './indexes';
-import values from './values';
+import obs from './table-operations';
 
 
 /**
@@ -13,11 +12,16 @@ import values from './values';
  * @@ ^Array<Number:Int<0>>
  */
 const sortOrder = async (dt, varName, compare) => {
+  const _dt = await typeCheck(1, dt, types.Map, extensions.isDataTable);
+  const _varName = await typeCheck(2, varNames, types.String);
   const _compare = await typeCheck(3, compare, types.Function);
-  const _indexes = await indexes(dt);
-  const _values = await values(dt, varName);
+
+  const indexes = obs.indexes(_dt);
+  const values = _dt.get(_varName);
   
-  return _indexes.sort((i, j) => _compare(_values[i], _values[j]));
+  return indexes.sort(
+    (i, j) => _compare(values[i], values[j]),
+  );
 };
 
 

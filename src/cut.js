@@ -1,8 +1,6 @@
 import { typeCheck, types, extensions } from './runtime-checks';
 import arr from './arr';
-import drop from './drop';
-import values from './values';
-
+import ops from './table-opertations';
 
 /**
  * % EXPOSED by MODULE as default, PACKAGE as cut
@@ -15,17 +13,17 @@ import values from './values';
  * @@ ^Map:DataTable
  */
 const cut = async (dt, varName, cutter) => {
+  const _dt = await typeCheck(1, dt, types.Map, extensions.isDataTable);
+  const _varName = await typeCheck(2, varName, types.String);
   const _cutter = await typeCheck(3, cutter, types.Function);
-  const _values = await values(dt, varName);
-  const _initial = await drop(dt, [varName]);
 
-  const newValues = arr.map(_values, _cutter);
+  const newValues = arr.map(_dt.get(_varName), _cutter);
   const newVars = [...newValues[0].keys()];
   
   return arr.reduce(
     newVars,
     (a, k) => a.set(k, arr.map(newValues, x => x.get(k))),
-    _initial,
+    ops.drop(_dt, _varName),
   );
 };
 

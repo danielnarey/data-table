@@ -1,8 +1,8 @@
 import { typeCheck, types, extensions } from './runtime-checks';
 import arr from './arr';
+import ops from './table-operations';
 import stats from 'simple-statistics';
 import indexes from './indexes';
-import map from './map';
 
 
 /**
@@ -14,13 +14,14 @@ import map from './map';
  * @@ ^Map:DataTable
  */
 const sample = async (dt, n) => {
+  const _dt = await typeCheck(1, dt, types.Map, extensions.isDataTable);
   const _n = await typeCheck(2, n, types.Number, extensions.Int(1));
+  
   const _indexes = await indexes(dt);
-
   const selected = stats.sample(_indexes, _n);
 
-  return map(
-    dt, 
+  return ops.mapValues(
+    _dt, 
     x => x.constructor.from(selected, i => x[i]),
   );
 };

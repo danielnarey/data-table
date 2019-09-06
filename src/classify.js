@@ -27,7 +27,10 @@ const classify = async (dt, varName, classifier, newName = null) => {
     _classifier,
   );
   
-  return (new Map(_dt)).set(_newName, classVar);
+  return new Map([
+    ..._dt, 
+    [_newName, classVar],
+  ]);
 };
 
 
