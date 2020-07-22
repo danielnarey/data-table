@@ -1,8 +1,8 @@
 # data-table
 
-A promise API for data wrangling in JavaScript
+[Experimental] A promise API for data wrangling in JavaScript
 
-*This repository is in active development*
+*This repository is no longer in active development*
 
 ## Validate
 
